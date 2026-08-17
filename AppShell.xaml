@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="TradeFlow.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:TradeFlow.Views"
+    Shell.FlyoutBehavior="Locked"
+    Title="TradeFlow">
+
+    <!-- Inicio -->
+    <FlyoutItem Title="Inicio" Route="InicioView">
+        <ShellContent
+            ContentTemplate="{DataTemplate views:InicioView}"
+            Route="InicioView" />
+    </FlyoutItem>
+
+    <!-- Facturas -->
+    <FlyoutItem Title="Facturas" Route="FacturasView">
+        <ShellContent
+            ContentTemplate="{DataTemplate views:FacturasView}"
+            Route="FacturasView" />
+    </FlyoutItem>
+
+    <!-- Productos -->
+    <FlyoutItem Title="Productos" Route="ProductosView">
+        <ShellContent
+            ContentTemplate="{DataTemplate views:ProductosView}"
+            Route="ProductosView" />
+    </FlyoutItem>
+
+    <!-- Clientes -->
+    <FlyoutItem Title="Clientes" Route="ClientesView">
+        <ShellContent
+            ContentTemplate="{DataTemplate views:ClientesView}"
+            Route="ClientesView" />
+    </FlyoutItem>
+
+    <!-- Localidades -->
+    <FlyoutItem Title="Localidades" Route="LocalidadesView">
+        <ShellContent
+            ContentTemplate="{DataTemplate views:LocalidadesView}"
+            Route="LocalidadesView" />
+    </FlyoutItem>
+
+    <!-- Backup -->
+    <FlyoutItem Title="Backup" Route="BackupView">
+        <ShellContent
+            ContentTemplate="{DataTemplate views:BackupView}"
+            Route="BackupView" />
+    </FlyoutItem>
+
+</Shell>
