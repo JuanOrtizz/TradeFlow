@@ -12,7 +12,7 @@ namespace TradeFlow.Data.Repositories
             _db = db.Connection();
         }
 
-        public async Task<List<ClienteModel>> BuscarPorNombreAsync(string nombre)
+        public async Task<IReadOnlyList<ClienteModel>> BuscarPorNombreAsync(string nombre)
         {
             return await _db.Table<ClienteModel>().Where(c => c.Nombre.Contains(nombre)).ToListAsync();
         }
