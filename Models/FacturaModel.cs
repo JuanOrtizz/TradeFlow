@@ -7,7 +7,7 @@ namespace TradeFlow.Models
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
 
-        public DateTime Fecha { get; set; }
+        public DateTime Fecha { get; set; } = DateTime.Now;
 
         [Indexed]
         public int ClienteId { get; set; }
