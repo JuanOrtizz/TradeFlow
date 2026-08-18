@@ -2,7 +2,7 @@
 
 namespace TradeFlow.Data.Repositories
 {
-    public interface IFacturaRepositorio
+    public interface IFacturaRepository
     {
         Task<List<FacturaModel>> ObtenerTodasAsync();
         Task<FacturaModel?> ObtenerPorIdAsync(int id);

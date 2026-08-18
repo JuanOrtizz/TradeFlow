@@ -2,7 +2,7 @@
 
 namespace TradeFlow.Data.Repositories
 {
-    public interface ILocalidadRepositorio
+    public interface ILocalidadRepository
     {
         Task<List<LocalidadModel>> ObtenerTodasAsync();
         Task<LocalidadModel> ObtenerPorIdAsync(int id);

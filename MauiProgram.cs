@@ -27,10 +27,10 @@ namespace TradeFlow
             });
 
             // Repositorios
-            builder.Services.AddSingleton<IClienteRepositorio, ClienteRepository>();
-            builder.Services.AddSingleton<IProductoRepositorio, ProductoRepository>();
-            builder.Services.AddSingleton<IFacturaRepositorio, FacturaRepository>();
-            builder.Services.AddSingleton<ILocalidadRepositorio, LocalidadRepository>();
+            builder.Services.AddSingleton<IClienteRepository, ClienteRepository>();
+            builder.Services.AddSingleton<IProductoRepository, ProductoRepository>();
+            builder.Services.AddSingleton<IFacturaRepository, FacturaRepository>();
+            builder.Services.AddSingleton<ILocalidadRepository, LocalidadRepository>();
 
             // ViewModels
             builder.Services.AddTransient<InicioViewModel>();

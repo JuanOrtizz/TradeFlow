@@ -2,7 +2,7 @@ using TradeFlow.Models;
 
 namespace TradeFlow.Data.Repositories
 {
-    public class ClienteRepository : IClienteRepositorio
+    public class ClienteRepository : IClienteRepository
     {
         private readonly DatabaseService _db;
 
