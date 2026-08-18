@@ -1,34 +1,69 @@
+using SQLite;
 using TradeFlow.Models;
 
 namespace TradeFlow.Data.Repositories
 {
     public class LocalidadRepository : ILocalidadRepository
     {
-        private readonly DatabaseService _db;
+        private readonly SQLiteAsyncConnection _db;
 
         public LocalidadRepository(DatabaseService db)
         {
-            _db = db;
+            _db = db.Connection();
         }
 
-        public Task<List<LocalidadModel>> ObtenerTodasAsync()
+        public async Task<int> EliminarAsync(LocalidadModel localidad)
         {
-            throw new NotImplementedException();
+            var result = await _db.DeleteAsync(localidad);
+            if (result > 0)
+            {
+                return result;
+            }
+            else
+            {
+                throw new Exception("Error al eliminar la localidad.");
+            }
         }
 
-        public Task<LocalidadModel?> ObtenerPorIdAsync(int id)
+        public async Task<int> GuardarAsync(LocalidadModel localidad)
         {
-            throw new NotImplementedException();
+            var result = await _db.UpdateAsync(localidad);
+            if (result > 0)
+            {
+                return result;
+            }
+            else
+            {
+                throw new Exception("Error al guardar la localidad.");
+            }
         }
 
-        public Task<int> GuardarAsync(LocalidadModel localidad)
+        public async Task<LocalidadModel> ObtenerPorIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _db.Table<LocalidadModel>().Where(l => l.Id == id).FirstOrDefaultAsync();
         }
 
-        public Task<int> EliminarAsync(LocalidadModel localidad)
+        public async Task<IReadOnlyList<LocalidadModel>> ObtenerTodasAsync()
         {
-            throw new NotImplementedException();
+            return await _db.Table<LocalidadModel>().ToListAsync();
+        }
+
+        public async Task<LocalidadModel> RegistrarAsync(string nombre)
+        {
+            var localidad = new LocalidadModel
+            {
+                Nombre = nombre
+            };
+
+            var result = await _db.InsertAsync(localidad);
+            if (result > 0)
+            {
+                return localidad;
+            }
+            else
+            {
+                throw new Exception("Error al registrar la localidad.");
+            }
         }
     }
 }

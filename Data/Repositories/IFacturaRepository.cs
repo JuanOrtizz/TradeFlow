@@ -4,13 +4,13 @@ namespace TradeFlow.Data.Repositories
 {
     public interface IFacturaRepository
     {
-        Task<List<FacturaModel>> ObtenerTodasAsync();
+        Task<IReadOnlyList<FacturaModel>> ObtenerTodasAsync();
         Task<FacturaModel?> ObtenerPorIdAsync(int id);
-        Task<List<DetalleFacturaModel>> ObtenerDetallesAsync(int facturaId);
+        Task<IReadOnlyList<DetalleFacturaModel>> ObtenerDetallesAsync(int facturaId);
         Task<int> GuardarAsync(FacturaModel factura);
         Task<int> EliminarAsync(FacturaModel factura);
-        Task<FacturaModel> RegistrarAsync(ClienteModel cliente, DetalleFacturaModel detalles);
-        Task<List<FacturaModel>> ObtenerPorClienteAsync(int clienteId);
-        Task<List<FacturaModel>> ObtenerPorFechaAsync(DateTime fecha);
+        Task<FacturaModel> RegistrarAsync(ClienteModel cliente, List<DetalleFacturaModel> items);
+        Task<IReadOnlyList<FacturaModel>> ObtenerPorClienteAsync(int clienteId);
+        Task<IReadOnlyList<FacturaModel>> ObtenerPorFechaAsync(DateTime fecha);
     }
 }
