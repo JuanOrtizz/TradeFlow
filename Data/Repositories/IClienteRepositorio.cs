@@ -10,7 +10,7 @@ namespace TradeFlow.Data.Repositories
         Task<int> EliminarAsync(ClienteModel cliente);
         Task<List<ClienteModel>> ObtenerPorLocalidadAsync(int localidadId);
         Task<List<ClienteModel>> BuscarPorNombreAsync(string nombre);
-        Task<ClienteModel> RegistrarUsuarioAsync(string nombre, string telefono, string direccion, LocalidadModel localidad);
+        Task<ClienteModel> RegistrarAsync(string nombre, string telefono, string direccion, LocalidadModel localidad);
 
     }
 }
