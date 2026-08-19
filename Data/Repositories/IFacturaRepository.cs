@@ -12,5 +12,6 @@ namespace TradeFlow.Data.Repositories
         Task<FacturaModel> RegistrarAsync(ClienteModel cliente, List<DetalleFacturaModel> items);
         Task<IReadOnlyList<FacturaModel>> ObtenerPorClienteAsync(int clienteId);
         Task<IReadOnlyList<FacturaModel>> ObtenerPorFechaAsync(DateTime fecha);
+        Task<IReadOnlyList<FacturaModel>> ObtenerUltimasDiezAsync();
     }
 }

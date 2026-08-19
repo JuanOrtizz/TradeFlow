@@ -87,5 +87,10 @@ namespace TradeFlow.Data.Repositories
                 throw new Exception("Error al registrar la factura.");
             }
         }
+
+        public async Task<IReadOnlyList<FacturaModel>> ObtenerUltimasDiezAsync()
+        {
+            return await _db.Table<FacturaModel>().OrderByDescending(f => f.Fecha).Take(10).ToListAsync();
+        }
     }
 }
