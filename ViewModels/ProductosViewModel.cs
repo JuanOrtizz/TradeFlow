@@ -5,6 +5,7 @@ using System.Windows.Input;
 using TradeFlow.Data.Repositories;
 using TradeFlow.Models;
 using TradeFlow.Services;
+using TradeFlow.Views;
 
 namespace TradeFlow.ViewModels
 {
@@ -48,21 +49,26 @@ namespace TradeFlow.ViewModels
             get => _textoBusqueda;
             set
             {
-                if (_textoBusqueda != value)
+                var nuevoValor = value?.Trim() ?? string.Empty;
+                if (_textoBusqueda != nuevoValor)
                 {
-                    _textoBusqueda = value;
+                    _textoBusqueda = nuevoValor;
                     OnPropertyChanged(nameof(TextoBusqueda));
                 }
             }
         }
 
         public ICommand EliminarCommand { get; }
+        public ICommand VerDetalleCommand { get; }
+        public ICommand IrAAgregarCommand { get; }
 
         public ProductosViewModel(IProductoRepository productoRepository, IDisplayAlertService displayAlertService)
         {
             _productoRepository = productoRepository;
             _displayAlertService = displayAlertService;
             EliminarCommand = new Command<ProductoModel>(async (producto) => await EliminarAsync(producto));
+            VerDetalleCommand = new Command<ProductoModel>(async (producto) => await Shell.Current.GoToAsync($"detalleproducto?productoId={producto.Id}"));
+            IrAAgregarCommand = new Command(async () => await Shell.Current.GoToAsync(nameof(AgregarProductoView)));
         }
 
         public async Task InicializarAsync()
