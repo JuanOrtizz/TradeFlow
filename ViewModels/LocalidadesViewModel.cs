@@ -5,6 +5,7 @@ using System.Windows.Input;
 using TradeFlow.Data.Repositories;
 using TradeFlow.Models;
 using TradeFlow.Services;
+using TradeFlow.Views;
 
 namespace TradeFlow.ViewModels
 {
@@ -46,12 +47,14 @@ namespace TradeFlow.ViewModels
         }
 
         public ICommand EliminarCommand { get; }
+        public ICommand IrAAgregarCommand { get; }
 
         public LocalidadesViewModel(ILocalidadRepository localidadRepository, IDisplayAlertService displayAlertService)
         {
             _localidadRepository = localidadRepository;
             _displayAlertService = displayAlertService;
             EliminarCommand = new Command<LocalidadModel>(async (localidad) => await EliminarAsync(localidad));
+            IrAAgregarCommand = new Command(async () => await Shell.Current.GoToAsync(nameof(AgregarLocalidadView)));
         }
 
         public async Task InicializarAsync()
