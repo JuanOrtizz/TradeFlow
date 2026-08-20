@@ -2,16 +2,20 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using TradeFlow.Data.Repositories;
+using TradeFlow.Models;
 using TradeFlow.Services;
 
 namespace TradeFlow.ViewModels
 {
-    public class AgregarProductoViewModel
+    [QueryProperty(nameof(ProductoId), "productoId")]
+    public class EditarProductoViewModel
     {
         private readonly IProductoRepository _productoRepository;
         private readonly IDisplayAlertService _displayAlertService;
         private readonly IValidacionesService _validacionesService;
 
+        private int _productoId;
+        private ProductoModel? _producto;
         private string _nombre = string.Empty;
         private string _codigo = string.Empty;
         private decimal _precio;
@@ -22,6 +26,32 @@ namespace TradeFlow.ViewModels
         private bool _hayErrorEnPrecio;
         private string _errorPrecio = string.Empty;
         private bool _isBusy;
+
+        public int ProductoId
+        {
+            get => _productoId;
+            set
+            {
+                if (_productoId != value)
+                {
+                    _productoId = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public ProductoModel? Producto
+        {
+            get => _producto;
+            set
+            {
+                if (_producto != value)
+                {
+                    _producto = value;
+                    OnPropertyChanged(nameof(Producto));
+                }
+            }
+        }
 
         public string Nombre
         {
@@ -158,18 +188,47 @@ namespace TradeFlow.ViewModels
             }
         }
 
-        public ICommand RegistroProductoCommand { get; }
+        public ICommand GuardarCommand { get; }
 
-        public AgregarProductoViewModel( IProductoRepository productoRepository, IDisplayAlertService displayAlertService, IValidacionesService validacionesService)
+        public EditarProductoViewModel(IProductoRepository productoRepository, IDisplayAlertService displayAlertService, IValidacionesService validacionesService)
         {
             _productoRepository = productoRepository;
             _displayAlertService = displayAlertService;
             _validacionesService = validacionesService;
-            RegistroProductoCommand = new Command(async () => await GuardarAsync());
+            GuardarCommand = new Command(async () => await GuardarAsync());
+        }
+
+        public async Task InicializarAsync()
+        {
+            try
+            {
+                IsBusy = true;
+
+                Producto = await _productoRepository.ObtenerPorIdAsync(ProductoId);
+                if (Producto == null)
+                {
+                    await _displayAlertService.MostrarAlertAsync("Error", "No se encontró el producto", "OK");
+                    return;
+                }
+
+                Nombre = Producto.Nombre;
+                Codigo = Producto.Codigo;
+                Precio = Producto.Precio;
+            }
+            catch (Exception)
+            {
+                await _displayAlertService.MostrarAlertAsync("Error", "No se pudo cargar el producto", "OK");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         public async Task GuardarAsync()
         {
+            if (Producto == null) return;
+
             try
             {
                 IsBusy = true;
@@ -188,17 +247,19 @@ namespace TradeFlow.ViewModels
                     return;
                 }
 
-                await _productoRepository.RegistrarAsync(Nombre, Codigo, Precio);
+                Producto.Nombre = Nombre;
+                Producto.Codigo = Codigo;
+                Producto.Precio = Precio;
 
-                await _displayAlertService.MostrarAlertAsync("Éxito", "Producto registrado correctamente", "OK");
+                await _productoRepository.GuardarAsync(Producto);
 
-                Nombre = string.Empty;
-                Codigo = string.Empty;
-                Precio = 0;
+                await _displayAlertService.MostrarAlertAsync("Éxito", "Producto actualizado correctamente", "OK");
+
+                await Shell.Current.GoToAsync("..");
             }
             catch (Exception)
             {
-                await _displayAlertService.MostrarAlertAsync("Error", "No se pudo registrar el producto", "OK");
+                await _displayAlertService.MostrarAlertAsync("Error", "No se pudo actualizar el producto", "OK");
             }
             finally
             {

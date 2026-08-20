@@ -2,9 +2,9 @@ using TradeFlow.ViewModels;
 
 namespace TradeFlow.Views;
 
-public partial class DetalleProductoView : ContentPage
+public partial class EditarProductoView : ContentPage
 {
-    public DetalleProductoView(DetalleProductoViewModel vm)
+    public EditarProductoView(EditarProductoViewModel vm)
     {
         InitializeComponent();
         BindingContext = vm;
@@ -14,7 +14,7 @@ public partial class DetalleProductoView : ContentPage
     {
         base.OnAppearing();
 
-        if (BindingContext is DetalleProductoViewModel vm)
+        if (BindingContext is EditarProductoViewModel vm)
         {
             await vm.InicializarAsync();
         }
