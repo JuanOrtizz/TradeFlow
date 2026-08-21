@@ -4,6 +4,8 @@ namespace TradeFlow.Views;
 
 public partial class AgregarClienteView : ContentPage
 {
+    private bool _inicializado = false;
+
     public AgregarClienteView(AgregarClienteViewModel vm)
     {
         InitializeComponent();
@@ -14,9 +16,13 @@ public partial class AgregarClienteView : ContentPage
     {
         base.OnAppearing();
 
-        if (BindingContext is AgregarClienteViewModel vm)
+        if (!_inicializado)
         {
-            await vm.CargarLocalidadesAsync();
+            _inicializado = true;
+            if (BindingContext is AgregarClienteViewModel vm)
+            {
+                await vm.CargarLocalidadesAsync();
+            }
         }
     }
 }
