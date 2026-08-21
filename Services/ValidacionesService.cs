@@ -12,5 +12,11 @@ namespace TradeFlow.Services
             }
             return string.Empty;
         }
+
+        // Metodo para validar que un select no este vacio
+        public string ValidarSeleccion<T>(T? seleccion, string nombreCampo)
+        {
+            return seleccion == null ? $"Seleccione una {nombreCampo}" : string.Empty;
+        }
     }
 }

@@ -250,16 +250,8 @@ namespace TradeFlow.ViewModels
                 ErrorDireccion = _validacionesService.ValidarCampoVacio(Direccion);
                 HayErrorEnDireccion = !string.IsNullOrEmpty(ErrorDireccion);
 
-                if (LocalidadSeleccionada == null)
-                {
-                    ErrorLocalidad = "Seleccione una localidad";
-                    HayErrorEnLocalidad = true;
-                }
-                else
-                {
-                    ErrorLocalidad = string.Empty;
-                    HayErrorEnLocalidad = false;
-                }
+                ErrorLocalidad = _validacionesService.ValidarSeleccion(LocalidadSeleccionada, "localidad");
+                HayErrorEnLocalidad = !string.IsNullOrEmpty(ErrorLocalidad);
 
                 if (HayErrorEnNombre || HayErrorEnTelefono || HayErrorEnDireccion || HayErrorEnLocalidad)
                 {
