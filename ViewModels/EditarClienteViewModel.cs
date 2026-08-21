@@ -8,13 +8,16 @@ using TradeFlow.Services;
 
 namespace TradeFlow.ViewModels
 {
-    public class AgregarClienteViewModel
+    [QueryProperty(nameof(ClienteId), "clienteId")]
+    public class EditarClienteViewModel
     {
         private readonly IClienteRepository _clienteRepository;
         private readonly ILocalidadRepository _localidadRepository;
         private readonly IDisplayAlertService _displayAlertService;
         private readonly IValidacionesService _validacionesService;
 
+        private int _clienteId;
+        private ClienteModel? _cliente;
         private string _nombre = string.Empty;
         private string _telefono = string.Empty;
         private string _direccion = string.Empty;
@@ -28,6 +31,32 @@ namespace TradeFlow.ViewModels
         private bool _hayErrorEnLocalidad;
         private string _errorLocalidad = string.Empty;
         private bool _isBusy;
+
+        public int ClienteId
+        {
+            get => _clienteId;
+            set
+            {
+                if (_clienteId != value)
+                {
+                    _clienteId = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public ClienteModel? Cliente
+        {
+            get => _cliente;
+            set
+            {
+                if (_cliente != value)
+                {
+                    _cliente = value;
+                    OnPropertyChanged(nameof(Cliente));
+                }
+            }
+        }
 
         public string Nombre
         {
@@ -207,36 +236,61 @@ namespace TradeFlow.ViewModels
 
         public ObservableCollection<LocalidadModel> ListaLocalidades { get; } = new ObservableCollection<LocalidadModel>();
 
-        public ICommand RegistroClienteCommand { get; }
+        public ICommand GuardarCommand { get; }
 
-        public AgregarClienteViewModel(IClienteRepository clienteRepository, ILocalidadRepository localidadRepository, IDisplayAlertService displayAlertService, IValidacionesService validacionesService)
+        public EditarClienteViewModel(
+            IClienteRepository clienteRepository,
+            ILocalidadRepository localidadRepository,
+            IDisplayAlertService displayAlertService,
+            IValidacionesService validacionesService)
         {
             _clienteRepository = clienteRepository;
             _localidadRepository = localidadRepository;
             _displayAlertService = displayAlertService;
             _validacionesService = validacionesService;
-            RegistroClienteCommand = new Command(async () => await GuardarAsync());
+            GuardarCommand = new Command(async () => await GuardarAsync());
         }
 
-        public async Task CargarLocalidadesAsync()
+        public async Task InicializarAsync()
         {
             try
             {
+                IsBusy = true;
+
+                Cliente = await _clienteRepository.ObtenerPorIdAsync(ClienteId);
+                if (Cliente == null)
+                {
+                    await _displayAlertService.MostrarAlertAsync("Error", "No se encontró el cliente", "OK");
+                    return;
+                }
+
+                Nombre = Cliente.Nombre;
+                Telefono = Cliente.Telefono;
+                Direccion = Cliente.Direccion;
+
                 ListaLocalidades.Clear();
                 var localidades = await _localidadRepository.ObtenerTodasAsync();
                 foreach (var localidad in localidades)
                 {
                     ListaLocalidades.Add(localidad);
                 }
+
+                LocalidadSeleccionada = ListaLocalidades.FirstOrDefault(l => l.Id == Cliente.LocalidadId);
             }
             catch (Exception)
             {
-                await _displayAlertService.MostrarAlertAsync("Error", "No se pudieron cargar las localidades", "OK");
+                await _displayAlertService.MostrarAlertAsync("Error", "No se pudo cargar el cliente", "OK");
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
 
         public async Task GuardarAsync()
         {
+            if (Cliente == null) return;
+
             try
             {
                 IsBusy = true;
@@ -266,18 +320,20 @@ namespace TradeFlow.ViewModels
                     return;
                 }
 
-                await _clienteRepository.RegistrarAsync(Nombre, Telefono, Direccion, LocalidadSeleccionada);
+                Cliente.Nombre = Nombre;
+                Cliente.Telefono = Telefono;
+                Cliente.Direccion = Direccion;
+                Cliente.LocalidadId = LocalidadSeleccionada.Id;
 
-                await _displayAlertService.MostrarAlertAsync("Éxito", "Cliente registrado correctamente", "OK");
+                await _clienteRepository.GuardarAsync(Cliente);
 
-                Nombre = string.Empty;
-                Telefono = string.Empty;
-                Direccion = string.Empty;
-                LocalidadSeleccionada = null;
+                await _displayAlertService.MostrarAlertAsync("Éxito", "Cliente actualizado correctamente", "OK");
+
+                await Shell.Current.GoToAsync("..");
             }
             catch (Exception)
             {
-                await _displayAlertService.MostrarAlertAsync("Error", "No se pudo registrar el cliente", "OK");
+                await _displayAlertService.MostrarAlertAsync("Error", "No se pudo actualizar el cliente", "OK");
             }
             finally
             {

@@ -2,9 +2,9 @@ using TradeFlow.ViewModels;
 
 namespace TradeFlow.Views;
 
-public partial class AgregarClienteView : ContentPage
+public partial class EditarClienteView : ContentPage
 {
-    public AgregarClienteView(AgregarClienteViewModel vm)
+    public EditarClienteView(EditarClienteViewModel vm)
     {
         InitializeComponent();
         BindingContext = vm;
@@ -14,9 +14,9 @@ public partial class AgregarClienteView : ContentPage
     {
         base.OnAppearing();
 
-        if (BindingContext is AgregarClienteViewModel vm)
+        if (BindingContext is EditarClienteViewModel vm)
         {
-            await vm.CargarLocalidadesAsync();
+            await vm.InicializarAsync();
         }
     }
 }

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TradeFlow.Views.EditarClienteView"
+             Title="Editar Cliente">
+
+    <ContentPage.Content>
+        <ScrollView>
+            <VerticalStackLayout Padding="20" Spacing="15">
+
+                <Label Text="Editar Cliente"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center" />
+
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Nombre *" />
+                    <Entry Text="{Binding Nombre}" Placeholder="Nombre del cliente" />
+                    <Label Text="{Binding ErrorNombre}" TextColor="Red" FontSize="Small"
+                           IsVisible="{Binding HayErrorEnNombre}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Teléfono *" />
+                    <Entry Text="{Binding Telefono}" Placeholder="Teléfono del cliente" />
+                    <Label Text="{Binding ErrorTelefono}" TextColor="Red" FontSize="Small"
+                           IsVisible="{Binding HayErrorEnTelefono}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Dirección *" />
+                    <Entry Text="{Binding Direccion}" Placeholder="Dirección del cliente" />
+                    <Label Text="{Binding ErrorDireccion}" TextColor="Red" FontSize="Small"
+                           IsVisible="{Binding HayErrorEnDireccion}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Localidad *" />
+                    <Picker ItemsSource="{Binding ListaLocalidades}"
+                            ItemDisplayBinding="{Binding Nombre}"
+                            SelectedItem="{Binding LocalidadSeleccionada}" />
+                    <Label Text="{Binding ErrorLocalidad}" TextColor="Red" FontSize="Small"
+                           IsVisible="{Binding HayErrorEnLocalidad}" />
+                </VerticalStackLayout>
+
+                <Button Text="Guardar Cambios"
+                        Command="{Binding GuardarCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
+                        BackgroundColor="#512BD4"
+                        TextColor="White" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+
+</ContentPage>
