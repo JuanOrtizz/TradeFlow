@@ -16,6 +16,8 @@ namespace TradeFlow
             Routing.RegisterRoute(nameof(AgregarClienteView), typeof(AgregarClienteView));
             Routing.RegisterRoute(nameof(DetalleClienteView), typeof(DetalleClienteView));
             Routing.RegisterRoute(nameof(AgregarLocalidadView), typeof(AgregarLocalidadView));
+            Routing.RegisterRoute(nameof(EditarProductoView), typeof(EditarProductoView));
+            Routing.RegisterRoute(nameof(EditarClienteView), typeof(EditarClienteView));
         }
     }
 }
