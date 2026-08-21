@@ -61,6 +61,7 @@ namespace TradeFlow.ViewModels
         public ICommand EliminarCommand { get; }
         public ICommand VerDetalleCommand { get; }
         public ICommand IrAAgregarCommand { get; }
+        public ICommand BuscarCommand { get; }
 
         public ProductosViewModel(IProductoRepository productoRepository, IDisplayAlertService displayAlertService)
         {
@@ -69,6 +70,7 @@ namespace TradeFlow.ViewModels
             EliminarCommand = new Command<ProductoModel>(async (producto) => await EliminarAsync(producto));
             VerDetalleCommand = new Command<ProductoModel>(async (producto) => await Shell.Current.GoToAsync($"detalleproducto?productoId={producto.Id}"));
             IrAAgregarCommand = new Command(async () => await Shell.Current.GoToAsync(nameof(AgregarProductoView)));
+            BuscarCommand = new Command(async () => await BuscarAsync());
         }
 
         public async Task InicializarAsync()
