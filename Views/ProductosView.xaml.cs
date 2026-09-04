@@ -1,11 +1,10 @@
+using TradeFlow.Models;
 using TradeFlow.ViewModels;
 
 namespace TradeFlow.Views;
 
 public partial class ProductosView : ContentPage
 {
-    private bool _inicializado = false;
-
     public ProductosView(ProductosViewModel vm)
     {
         InitializeComponent();
@@ -16,13 +15,19 @@ public partial class ProductosView : ContentPage
     {
         base.OnAppearing();
 
-        if (!_inicializado)
+        if (BindingContext is ProductosViewModel vm)
         {
-            _inicializado = true;
-            if (BindingContext is ProductosViewModel vm)
-            {
-                await vm.InicializarAsync();
-            }
+            await vm.InicializarAsync();
+        }
+    }
+
+    private async void OnEstadoChanged(object? sender, CheckedChangedEventArgs e)
+    {
+        if (sender is CheckBox checkBox &&
+            BindingContext is ProductosViewModel vm &&
+            checkBox.BindingContext is ProductoModel producto)
+        {
+            await vm.CambiarEstadoAsync(producto);
         }
     }
 }

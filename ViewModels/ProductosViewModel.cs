@@ -9,14 +9,16 @@ using TradeFlow.Views;
 
 namespace TradeFlow.ViewModels
 {
-    public class ProductosViewModel
+    public class ProductosViewModel : INotifyPropertyChanged
     {
         private readonly IProductoRepository _productoRepository;
+        private readonly IImpresionService _impresionService;
         private readonly IDisplayAlertService _displayAlertService;
 
         private ObservableCollection<ProductoModel> _listaProductos = new ObservableCollection<ProductoModel>();
         private bool _isBusy;
         private string _textoBusqueda = string.Empty;
+        private int _idBusquedaActual;
 
         public ObservableCollection<ProductoModel> ListaProductos
         {
@@ -54,6 +56,7 @@ namespace TradeFlow.ViewModels
                 {
                     _textoBusqueda = nuevoValor;
                     OnPropertyChanged(nameof(TextoBusqueda));
+                    _ = BuscarAsync();
                 }
             }
         }
@@ -61,52 +64,39 @@ namespace TradeFlow.ViewModels
         public ICommand EliminarCommand { get; }
         public ICommand VerDetalleCommand { get; }
         public ICommand IrAAgregarCommand { get; }
-        public ICommand BuscarCommand { get; }
+        public ICommand ExportarPdfCommand { get; }
 
-        public ProductosViewModel(IProductoRepository productoRepository, IDisplayAlertService displayAlertService)
+        public ProductosViewModel(IProductoRepository productoRepository, IImpresionService impresionService, IDisplayAlertService displayAlertService)
         {
             _productoRepository = productoRepository;
+            _impresionService = impresionService;
             _displayAlertService = displayAlertService;
             EliminarCommand = new Command<ProductoModel>(async (producto) => await EliminarAsync(producto));
-            VerDetalleCommand = new Command<ProductoModel>(async (producto) => await Shell.Current.GoToAsync($"detalleproducto?productoId={producto.Id}"));
+            VerDetalleCommand = new Command<ProductoModel>(async (producto) => await Shell.Current.GoToAsync($"{nameof(DetalleProductoView)}?productoId={producto.Id}"));
             IrAAgregarCommand = new Command(async () => await Shell.Current.GoToAsync(nameof(AgregarProductoView)));
-            BuscarCommand = new Command(async () => await BuscarAsync());
+            ExportarPdfCommand = new Command(async () => await ExportarPdfAsync());
         }
 
         public async Task InicializarAsync()
         {
-            try
-            {
-                IsBusy = true;
-                _listaProductos.Clear();
-
-                var productos = await _productoRepository.ObtenerTodosAsync();
-                foreach (var producto in productos)
-                {
-                    _listaProductos.Add(producto);
-                }
-            }
-            catch (Exception)
-            {
-                await _displayAlertService.MostrarAlertAsync("Error", "No se pudieron cargar los productos", "OK");
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            await BuscarAsync();
         }
 
         public async Task BuscarAsync()
         {
+            var idBusqueda = ++_idBusquedaActual;
+
             try
             {
                 IsBusy = true;
-                _listaProductos.Clear();
 
                 var productos = string.IsNullOrWhiteSpace(TextoBusqueda)
                     ? await _productoRepository.ObtenerTodosAsync()
-                    : await _productoRepository.BuscarPorNombreAsync(TextoBusqueda.Trim());
+                    : await _productoRepository.BuscarAsync(TextoBusqueda.Trim());
 
+                if (idBusqueda != _idBusquedaActual) return;
+
+                _listaProductos.Clear();
                 foreach (var producto in productos)
                 {
                     _listaProductos.Add(producto);
@@ -114,11 +104,15 @@ namespace TradeFlow.ViewModels
             }
             catch (Exception)
             {
+                if (idBusqueda != _idBusquedaActual) return;
                 await _displayAlertService.MostrarAlertAsync("Error", "No se pudieron buscar los productos", "OK");
             }
             finally
             {
-                IsBusy = false;
+                if (idBusqueda == _idBusquedaActual)
+                {
+                    IsBusy = false;
+                }
             }
         }
 
@@ -138,6 +132,44 @@ namespace TradeFlow.ViewModels
             catch (Exception)
             {
                 await _displayAlertService.MostrarAlertAsync("Error", "No se pudo eliminar el producto", "OK");
+            }
+        }
+
+        public async Task CambiarEstadoAsync(ProductoModel producto)
+        {
+            try
+            {
+                await _productoRepository.GuardarAsync(producto);
+            }
+            catch (Exception)
+            {
+                await _displayAlertService.MostrarAlertAsync("Error", "No se pudo actualizar el estado del producto", "OK");
+            }
+        }
+
+        private async Task ExportarPdfAsync()
+        {
+            try
+            {
+                IsBusy = true;
+
+                var productos = await _productoRepository.ObtenerTodosAsync();
+                if (productos == null || productos.Count == 0)
+                {
+                    await _displayAlertService.MostrarAlertAsync("Aviso", "No hay productos para exportar", "OK");
+                    return;
+                }
+
+                var ruta = await _impresionService.GenerarCatalogoPdfAsync(productos);
+                await _displayAlertService.MostrarAlertAsync("Éxito", $"Catálogo exportado correctamente\n{ruta}", "OK");
+            }
+            catch (Exception)
+            {
+                await _displayAlertService.MostrarAlertAsync("Error", "No se pudo exportar el catálogo a PDF", "OK");
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
 

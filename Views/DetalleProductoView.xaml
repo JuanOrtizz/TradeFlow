@@ -2,10 +2,97 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TradeFlow.Views.DetalleProductoView"
-             Title="Detalle Producto">
+             xmlns:controls="clr-namespace:TradeFlow.Controls"
+             Title="Detalle Producto"
+             BackgroundColor="{StaticResource Background}">
 
-    <Label Text="Detalle Producto - Por implementar"
-           VerticalOptions="Center"
-           HorizontalOptions="Center" />
+    <Grid RowDefinitions="*">
+
+        <ScrollView IsVisible="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}">
+            <VerticalStackLayout Padding="20" Spacing="16">
+
+                <Grid
+                    RowDefinitions="*"
+                    ColumnDefinitions="*, 2*"
+                    >
+                    <Button 
+                        Grid.Column="0"
+                        Text="Volver"
+                        Style="{StaticResource BackButtonStyle}"
+                        Command="{Binding VolverCommand}"
+                        />
+
+                    <!-- Botones de accion -->
+                    <HorizontalStackLayout
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Spacing="5"
+                        >
+                        <Button
+                            Text="Editar"
+                            Command="{Binding EditarCommand}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            BackgroundColor="DarkGoldenrod"
+                            />
+
+                        <Button 
+                            Grid.Column="1"
+                            Text="Eliminar"
+                            Command="{Binding EliminarCommand}"
+                            Style="{StaticResource DangerButtonStyle}" />
+                    </HorizontalStackLayout>
+
+                </Grid>
+                <!-- Datos -->
+                <Border Style="{StaticResource CardStyle}" Padding="20">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="Informacion del producto"
+                               Style="{StaticResource SectionTitleStyle}" />
+
+                        <BoxView HeightRequest="1" Color="Black" />
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Label Grid.Column="0" Text="Codigo:"
+                                   FontAttributes="Bold"
+                                   TextColor="Black" />
+                            <Label Grid.Column="1" Text="{Binding Producto.Codigo, Converter={StaticResource TextoVacioConverter}, ConverterParameter='Sin Codigo'}"
+                                   TextColor="{StaticResource TextPrimary}" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Label Grid.Column="0" Text="Nombre:"
+                                   FontAttributes="Bold"
+                                   TextColor="Black" />
+                            <Label Grid.Column="1" Text="{Binding Producto.Nombre}"
+                                   TextColor="{StaticResource TextPrimary}" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Label Grid.Column="0" Text="Precio:"
+                                   FontAttributes="Bold"
+                                   TextColor="Black" />
+                            <Label Grid.Column="1" Text="{Binding Producto.Precio, StringFormat='${0:N2}'}"
+                                   TextColor="{StaticResource Success}"
+                                   FontAttributes="Bold" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Label Grid.Column="0" Text="Estado:"
+                                   FontAttributes="Bold"
+                                   TextColor="Black" />
+                            <Label Grid.Column="1" Text="{Binding EstadoTexto}"
+                                   TextColor="{StaticResource Primary}"
+                                   FontAttributes="Bold" />
+                        </Grid>
+
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <controls:CargandoOverlay EstaCargando="{Binding IsBusy}" />
+
+    </Grid>
 
 </ContentPage>

@@ -4,11 +4,12 @@ using System.Windows.Input;
 using TradeFlow.Data.Repositories;
 using TradeFlow.Models;
 using TradeFlow.Services;
+using TradeFlow.Views;
 
 namespace TradeFlow.ViewModels
 {
     [QueryProperty(nameof(ProductoId), "productoId")]
-    public class DetalleProductoViewModel
+    public class DetalleProductoViewModel : INotifyPropertyChanged
     {
         private readonly IProductoRepository _productoRepository;
         private readonly IDisplayAlertService _displayAlertService;
@@ -39,9 +40,12 @@ namespace TradeFlow.ViewModels
                 {
                     _producto = value;
                     OnPropertyChanged(nameof(Producto));
+                    OnPropertyChanged(nameof(EstadoTexto));
                 }
             }
         }
+
+        public string EstadoTexto => Producto?.Activo == true ? "Activo" : "Inactivo";
 
         public bool IsBusy
         {
@@ -58,6 +62,7 @@ namespace TradeFlow.ViewModels
 
         public ICommand EditarCommand { get; }
         public ICommand EliminarCommand { get; }
+        public ICommand VolverCommand { get; }
 
         public DetalleProductoViewModel(IProductoRepository productoRepository, IDisplayAlertService displayAlertService)
         {
@@ -65,6 +70,7 @@ namespace TradeFlow.ViewModels
             _displayAlertService = displayAlertService;
             EditarCommand = new Command(async () => await EditarAsync());
             EliminarCommand = new Command(async () => await EliminarAsync());
+            VolverCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
         }
 
         public async Task InicializarAsync()
@@ -89,7 +95,7 @@ namespace TradeFlow.ViewModels
             if (Producto == null) return;
             try
             {
-                await Shell.Current.GoToAsync($"editarproducto?productoId={Producto.Id}");
+                await Shell.Current.GoToAsync($"{nameof(EditarProductoView)}?productoId={Producto.Id}");
             }
             catch (Exception)
             {

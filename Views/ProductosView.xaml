@@ -1,11 +1,151 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:helpers="clr-namespace:TradeFlow.Helpers"
              x:Class="TradeFlow.Views.ProductosView"
-             Title="Productos">
+             xmlns:controls="clr-namespace:TradeFlow.Controls"
+             Title="Productos"
+             BackgroundColor="{StaticResource Background}">
 
-    <Label Text="Productos - Por implementar"
-           VerticalOptions="Center"
-           HorizontalOptions="Center" />
+    <Grid RowDefinitions="Auto,Auto,*"
+          Padding="20">
+
+        <!-- SearchBar + botones -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+            <Border
+                StrokeShape="4"
+                Stroke="LightGray"
+                StrokeThickness="{StaticResource BorderColor}"
+                >
+
+                <Border.Triggers>
+                    <DataTrigger TargetType="Border"
+                     Binding="{Binding Source={x:Reference BarraBusqueda}, Path=IsFocused}"
+                     Value="True">
+                        <Setter Property="Stroke" Value="DarkCyan" />
+                    </DataTrigger>
+                </Border.Triggers>
+
+
+                <SearchBar Grid.Column="0"
+                        x:Name="BarraBusqueda"
+                        Placeholder="Buscar producto por nombre o código..."
+                        Text="{Binding TextoBusqueda}"
+                        Style="{StaticResource SearchBarStyle}"
+                        Margin="0" 
+                        CancelButtonColor="Red"
+                         />
+                
+            </Border>
+
+            <Button Grid.Column="1"
+                    Text="Agregar"
+                    Command="{Binding IrAAgregarCommand}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Padding="12"
+                    CornerRadius="12"
+                    FontSize="16"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center" />
+
+            <Button Grid.Column="2"
+                    Text="Exportar PDF"
+                    Command="{Binding ExportarPdfCommand}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Padding="12"
+                    CornerRadius="12"
+                    FontSize="16"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    BackgroundColor="Blue"
+                    />
+        </Grid>
+
+        <!-- Lista de productos -->
+
+        <CollectionView 
+            Grid.Row="2"
+            ItemsSource="{Binding ListaProductos}"
+            IsVisible="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
+            Margin="0,8,0,0"
+            >
+
+            <CollectionView.EmptyView>
+                <Label Text="No hay productos registrados"
+               Style="{StaticResource EmptyStateStyle}"
+               Margin="20,40" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical"
+                   ItemSpacing="5" />
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+
+                    <Border Style="{StaticResource CardStyle}"
+                       helpers:HandCursor.IsEnabled="True"
+                       Margin="0,0,0,8"
+                       Padding="16">
+
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.VerDetalleCommand}"
+                              CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+
+                        <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="10">
+
+                            <!-- Checkbox activo/inactivo -->
+                            <CheckBox Grid.Column="0"
+                                      IsChecked="{Binding Activo, Mode=TwoWay}"
+                                      CheckedChanged="OnEstadoChanged"
+                                      Color="{StaticResource Primary}"
+                                      VerticalOptions="Center"
+                                      HorizontalOptions="Center" />
+
+                            <!-- Avatar -->
+                            <Border Grid.Column="1"
+                               BackgroundColor="{StaticResource SuccessLight}"
+                               WidthRequest="44" HeightRequest="44"
+                               Padding="0"
+                               StrokeThickness="1"
+                               Stroke="LightGray"
+                               StrokeShape="RoundRectangle 22"
+                               >
+                                <Label Text="{Binding Nombre, Converter={StaticResource FirstLetterConverter}}"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource Success}"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+                            </Border>
+
+                            <!-- Info -->
+                            <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="3">
+                                <Label Text="{Binding Nombre}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource TextPrimary}" />
+                                 <Label Text="{Binding Codigo, Converter={StaticResource TextoVacioConverter}, ConverterParameter='Sin Codigo'}"
+                                   FontSize="13"
+                                   TextColor="{StaticResource TextSecondary}" />
+                            </VerticalStackLayout>
+
+                            <!-- Precio -->
+                            <Label Grid.Column="3"
+                                Text="{Binding Precio, StringFormat='${0:N2}'}"
+                                Style="{StaticResource PriceStyle}"
+                                VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <controls:CargandoOverlay EstaCargando="{Binding IsBusy}" />
+
+    </Grid>
 
 </ContentPage>
