@@ -6,7 +6,7 @@ using TradeFlow.Services;
 
 namespace TradeFlow.ViewModels
 {
-    public class AgregarLocalidadViewModel
+    public class AgregarLocalidadViewModel : INotifyPropertyChanged
     {
         private readonly ILocalidadRepository _localidadRepository;
         private readonly IDisplayAlertService _displayAlertService;
@@ -74,6 +74,8 @@ namespace TradeFlow.ViewModels
 
         // Comandos
         public ICommand RegistroLocalidadCommand { get; }
+        public ICommand VolverCommand { get; }
+        public ICommand LimpiarErrorCommand { get; }
 
         public AgregarLocalidadViewModel(ILocalidadRepository localidadRepository, IDisplayAlertService displayAlertService, IValidacionesService validacionesService)
         {
@@ -81,19 +83,38 @@ namespace TradeFlow.ViewModels
             _displayAlertService = displayAlertService;
             _validacionesService = validacionesService;
             RegistroLocalidadCommand = new Command(async () => await GuardarAsync());
+            VolverCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
+            LimpiarErrorCommand = new Command<string>(LimpiarError);
+        }
+
+        private void LimpiarError(string campo)
+        {
+            if (campo == "Nombre")
+            {
+                HayErrorEnNombre = false;
+                ErrorNombre = string.Empty;
+            }
         }
 
         public async Task GuardarAsync()
         {
+            // Validar el nombre de la localidad
+            ErrorNombre = _validacionesService.ValidarCampoVacio(Nombre);
+            HayErrorEnNombre = !string.IsNullOrEmpty(ErrorNombre);
+            if (HayErrorEnNombre)
+            {
+                return;
+            }
+
             try
             {
                 IsBusy = true;
 
-                // Validar el nombre de la localidad
-                ErrorNombre = _validacionesService.ValidarCampoVacio(Nombre);
-                HayErrorEnNombre = !string.IsNullOrEmpty(ErrorNombre);
-                if (HayErrorEnNombre)
+                // Validar duplicados
+                if (await _localidadRepository.ExisteNombreAsync(Nombre))
                 {
+                    ErrorNombre = "Ya existe una localidad registrada con este nombre";
+                    HayErrorEnNombre = true;
                     return;
                 }
 
@@ -101,7 +122,7 @@ namespace TradeFlow.ViewModels
 
                 await _displayAlertService.MostrarAlertAsync("Éxito", "Localidad registrada correctamente", "OK");
 
-                Nombre = string.Empty;
+                await Shell.Current.GoToAsync("..");
             }
             catch (Exception)
             {

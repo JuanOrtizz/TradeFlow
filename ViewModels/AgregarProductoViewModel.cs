@@ -3,10 +3,11 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using TradeFlow.Data.Repositories;
 using TradeFlow.Services;
+using TradeFlow.Views;
 
 namespace TradeFlow.ViewModels
 {
-    public class AgregarProductoViewModel
+    public class AgregarProductoViewModel : INotifyPropertyChanged
     {
         private readonly IProductoRepository _productoRepository;
         private readonly IDisplayAlertService _displayAlertService;
@@ -14,7 +15,7 @@ namespace TradeFlow.ViewModels
 
         private string _nombre = string.Empty;
         private string _codigo = string.Empty;
-        private decimal _precio;
+        private string _precioTexto = string.Empty;
         private bool _hayErrorEnNombre;
         private string _errorNombre = string.Empty;
         private bool _hayErrorEnCodigo;
@@ -51,15 +52,16 @@ namespace TradeFlow.ViewModels
             }
         }
 
-        public decimal Precio
+        public string PrecioTexto
         {
-            get => _precio;
+            get => _precioTexto;
             set
             {
-                if (_precio != value)
+                var nuevoValor = value?.Trim() ?? string.Empty;
+                if (_precioTexto != nuevoValor)
                 {
-                    _precio = value;
-                    OnPropertyChanged(nameof(Precio));
+                    _precioTexto = nuevoValor;
+                    OnPropertyChanged(nameof(PrecioTexto));
                 }
             }
         }
@@ -159,6 +161,8 @@ namespace TradeFlow.ViewModels
         }
 
         public ICommand RegistroProductoCommand { get; }
+        public ICommand VolverCommand { get; }
+        public ICommand LimpiarErrorCommand { get; }
 
         public AgregarProductoViewModel( IProductoRepository productoRepository, IDisplayAlertService displayAlertService, IValidacionesService validacionesService)
         {
@@ -166,35 +170,85 @@ namespace TradeFlow.ViewModels
             _displayAlertService = displayAlertService;
             _validacionesService = validacionesService;
             RegistroProductoCommand = new Command(async () => await GuardarAsync());
+            VolverCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
+            LimpiarErrorCommand = new Command<string>(LimpiarError);
+        }
+
+        private void LimpiarError(string campo)
+        {
+            switch (campo)
+            {
+                case "Nombre":
+                    HayErrorEnNombre = false;
+                    ErrorNombre = string.Empty;
+                    break;
+                case "Codigo":
+                    HayErrorEnCodigo = false;
+                    ErrorCodigo = string.Empty;
+                    break;
+                case "Precio":
+                    HayErrorEnPrecio = false;
+                    ErrorPrecio = string.Empty;
+                    break;
+            }
         }
 
         public async Task GuardarAsync()
         {
+            ErrorNombre = _validacionesService.ValidarCampoVacio(Nombre);
+            HayErrorEnNombre = !string.IsNullOrEmpty(ErrorNombre);
+
+            decimal precio = 0;
+
+            ErrorPrecio = _validacionesService.ValidarCampoVacio(PrecioTexto);
+            if (string.IsNullOrEmpty(ErrorPrecio))
+            {
+                if (!_validacionesService.TryObtenerDecimal(PrecioTexto, out precio))
+                {
+                    ErrorPrecio = "El precio debe ser un número válido.";
+                }
+                else
+                {
+                    ErrorPrecio = _validacionesService.ValidarPrecio(precio);
+                }
+            }
+            HayErrorEnPrecio = !string.IsNullOrEmpty(ErrorPrecio);
+
+            if (HayErrorEnNombre || HayErrorEnCodigo || HayErrorEnPrecio)
+            {
+                return;
+            }
+
             try
             {
                 IsBusy = true;
 
-                ErrorNombre = _validacionesService.ValidarCampoVacio(Nombre);
-                HayErrorEnNombre = !string.IsNullOrEmpty(ErrorNombre);
-
-                ErrorCodigo = _validacionesService.ValidarCampoVacio(Codigo);
-                HayErrorEnCodigo = !string.IsNullOrEmpty(ErrorCodigo);
-
-                ErrorPrecio = _validacionesService.ValidarCampoVacio(Precio.ToString());
-                HayErrorEnPrecio = !string.IsNullOrEmpty(ErrorPrecio);
-
-                if (HayErrorEnNombre || HayErrorEnCodigo || HayErrorEnPrecio)
+                // Validar duplicados
+                if (await _productoRepository.ExisteNombreAsync(Nombre))
                 {
+                    ErrorNombre = "Ya existe un producto registrado con este nombre";
+                    HayErrorEnNombre = true;
                     return;
                 }
 
-                await _productoRepository.RegistrarAsync(Nombre, Codigo, Precio);
+                if (!string.IsNullOrEmpty(Codigo) && await _productoRepository.ExisteCodigoAsync(Codigo))
+                {
+                    ErrorCodigo = "Ya existe un producto registrado con este código";
+                    HayErrorEnCodigo = true;
+                    return;
+                }
+
+                var producto = await _productoRepository.RegistrarAsync(Nombre, Codigo, precio);
 
                 await _displayAlertService.MostrarAlertAsync("Éxito", "Producto registrado correctamente", "OK");
 
-                Nombre = string.Empty;
-                Codigo = string.Empty;
-                Precio = 0;
+                await Shell.Current.GoToAsync($"{nameof(DetalleProductoView)}?productoId={producto.Id}");
+
+                var navigation = Shell.Current.Navigation;
+                if (navigation.NavigationStack.Count > 2)
+                {
+                    navigation.RemovePage(navigation.NavigationStack[navigation.NavigationStack.Count - 2]);
+                }
             }
             catch (Exception)
             {

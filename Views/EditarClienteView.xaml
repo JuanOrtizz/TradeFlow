@@ -2,55 +2,181 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TradeFlow.Views.EditarClienteView"
-             Title="Editar Cliente">
+             xmlns:controls="clr-namespace:TradeFlow.Controls"
+             Title="Editar Cliente"
+             xmlns:helpers="clr-namespace:TradeFlow.Helpers"
+             BackgroundColor="{StaticResource Background}">
 
-    <ContentPage.Content>
+    <Grid RowDefinitions="*">
+
         <ScrollView>
-            <VerticalStackLayout Padding="20" Spacing="15">
+            <VerticalStackLayout Padding="20" Spacing="16">
 
-                <Label Text="Editar Cliente"
-                       FontSize="24"
-                       FontAttributes="Bold"
-                       HorizontalOptions="Center" />
+                <Button Text="Volver"
+                        Style="{StaticResource BackButtonStyle}"
+                        Command="{Binding VolverCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}" />
 
-                <VerticalStackLayout Spacing="5">
-                    <Label Text="Nombre *" />
-                    <Entry Text="{Binding Nombre}" Placeholder="Nombre del cliente" />
-                    <Label Text="{Binding ErrorNombre}" TextColor="Red" FontSize="Small"
-                           IsVisible="{Binding HayErrorEnNombre}" />
+                <!-- Nombre -->
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Nombre"
+                               Style="{StaticResource FieldLabelStyle}" />
+                    <Border StrokeShape="RoundRectangle 5" StrokeThickness="2"
+                                Stroke="{StaticResource BorderColor}" HeightRequest="50"
+                                BackgroundColor="{StaticResource CardBackground}" Padding="5,0">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                             Binding="{Binding Source={x:Reference NombreEntry}, Path=IsFocused}"
+                                             Value="True">
+                                <Setter Property="Stroke" Value="DarkCyan" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border"
+                                             Binding="{Binding HayErrorEnNombre}"
+                                             Value="True">
+                                <Setter Property="Stroke" Value="{StaticResource Danger}" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Entry x:Name="NombreEntry"
+                                   Text="{Binding Nombre}"
+                                   Placeholder="Nombre del cliente"
+                                   PlaceholderColor="{StaticResource TextLight}"
+                                   FontSize="16"
+                                   MaxLength="100"
+                                   BackgroundColor="Transparent"
+                                   TextColor="{StaticResource TextPrimary}">
+                            <Entry.Behaviors>
+                                <helpers:LimpiaErrorAlEnfocarBehavior Command="{Binding LimpiarErrorCommand}" CommandParameter="Nombre" />
+                            </Entry.Behaviors>
+                        </Entry>
+                    </Border>
+                    <Label Text="{Binding ErrorNombre}"
+                               Style="{StaticResource ErrorLabelStyle}"
+                               IsVisible="{Binding HayErrorEnNombre}" />
                 </VerticalStackLayout>
 
-                <VerticalStackLayout Spacing="5">
-                    <Label Text="Teléfono *" />
-                    <Entry Text="{Binding Telefono}" Placeholder="Teléfono del cliente" />
-                    <Label Text="{Binding ErrorTelefono}" TextColor="Red" FontSize="Small"
-                           IsVisible="{Binding HayErrorEnTelefono}" />
+                <!-- Telefono -->
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Teléfono"
+                               Style="{StaticResource FieldLabelStyle}" />
+                    <Border StrokeShape="RoundRectangle 5" StrokeThickness="2"
+                                Stroke="{StaticResource BorderColor}" HeightRequest="50"
+                                BackgroundColor="{StaticResource CardBackground}" Padding="5,0">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                             Binding="{Binding Source={x:Reference TelefonoEntry}, Path=IsFocused}"
+                                             Value="True">
+                                <Setter Property="Stroke" Value="DarkCyan" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border"
+                                             Binding="{Binding HayErrorEnTelefono}"
+                                             Value="True">
+                                <Setter Property="Stroke" Value="{StaticResource Danger}" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Entry x:Name="TelefonoEntry"
+                                   Text="{Binding Telefono}"
+                                   Placeholder="Telefono del cliente"
+                                   PlaceholderColor="{StaticResource TextLight}"
+                                   FontSize="16"
+                                   MaxLength="20"
+                                   Keyboard="Telephone"
+                                   BackgroundColor="Transparent"
+                                   TextColor="{StaticResource TextPrimary}">
+                            <Entry.Behaviors>
+                                <helpers:LimpiaErrorAlEnfocarBehavior Command="{Binding LimpiarErrorCommand}" CommandParameter="Telefono" />
+                            </Entry.Behaviors>
+                        </Entry>
+                    </Border>
+                    <Label Text="{Binding ErrorTelefono}"
+                               Style="{StaticResource ErrorLabelStyle}"
+                               IsVisible="{Binding HayErrorEnTelefono}" />
                 </VerticalStackLayout>
 
-                <VerticalStackLayout Spacing="5">
-                    <Label Text="Dirección *" />
-                    <Entry Text="{Binding Direccion}" Placeholder="Dirección del cliente" />
-                    <Label Text="{Binding ErrorDireccion}" TextColor="Red" FontSize="Small"
-                           IsVisible="{Binding HayErrorEnDireccion}" />
+                <!-- Direccion -->
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Dirección"
+                               Style="{StaticResource FieldLabelStyle}" />
+                    <Border StrokeShape="RoundRectangle 5" StrokeThickness="2"
+                                Stroke="{StaticResource BorderColor}" HeightRequest="50"
+                                BackgroundColor="{StaticResource CardBackground}" Padding="5,0">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                             Binding="{Binding Source={x:Reference DireccionEntry}, Path=IsFocused}"
+                                             Value="True">
+                                <Setter Property="Stroke" Value="DarkCyan" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border"
+                                             Binding="{Binding HayErrorEnDireccion}"
+                                             Value="True">
+                                <Setter Property="Stroke" Value="{StaticResource Danger}" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Entry x:Name="DireccionEntry"
+                                   Text="{Binding Direccion}"
+                                   Placeholder="Direccion del cliente"
+                                   PlaceholderColor="{StaticResource TextLight}"
+                                   FontSize="16"
+                                   MaxLength="200"
+                                   BackgroundColor="Transparent"
+                                   TextColor="{StaticResource TextPrimary}">
+                            <Entry.Behaviors>
+                                <helpers:LimpiaErrorAlEnfocarBehavior Command="{Binding LimpiarErrorCommand}" CommandParameter="Direccion" />
+                            </Entry.Behaviors>
+                        </Entry>
+                    </Border>
+                    <Label Text="{Binding ErrorDireccion}"
+                               Style="{StaticResource ErrorLabelStyle}"
+                               IsVisible="{Binding HayErrorEnDireccion}" />
                 </VerticalStackLayout>
 
-                <VerticalStackLayout Spacing="5">
-                    <Label Text="Localidad *" />
-                    <Picker ItemsSource="{Binding ListaLocalidades}"
-                            ItemDisplayBinding="{Binding Nombre}"
-                            SelectedItem="{Binding LocalidadSeleccionada}" />
-                    <Label Text="{Binding ErrorLocalidad}" TextColor="Red" FontSize="Small"
-                           IsVisible="{Binding HayErrorEnLocalidad}" />
+                <!-- Localidad -->
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Localidad"
+                               Style="{StaticResource FieldLabelStyle}" />
+                    <Border StrokeShape="RoundRectangle 5" StrokeThickness="2"
+                                Stroke="{StaticResource BorderColor}" HeightRequest="50"
+                                BackgroundColor="{StaticResource CardBackground}" Padding="5,0">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                             Binding="{Binding Source={x:Reference LocalidadPicker}, Path=IsFocused}"
+                                             Value="True">
+                                <Setter Property="Stroke" Value="DarkCyan" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border"
+                                             Binding="{Binding HayErrorEnLocalidad}"
+                                             Value="True">
+                                <Setter Property="Stroke" Value="{StaticResource Danger}" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Picker x:Name="LocalidadPicker"
+                                    ItemsSource="{Binding ListaLocalidades}"
+                                    ItemDisplayBinding="{Binding Nombre}"
+                                    SelectedItem="{Binding LocalidadSeleccionada}"
+                                    FontSize="16"
+                                    BackgroundColor="Transparent"
+                                    TextColor="{StaticResource TextPrimary}">
+                            <Picker.Behaviors>
+                                <helpers:LimpiaErrorAlEnfocarBehavior Command="{Binding LimpiarErrorCommand}" CommandParameter="Localidad" />
+                            </Picker.Behaviors>
+                        </Picker>
+                    </Border>
+                    <Label Text="{Binding ErrorLocalidad}"
+                               Style="{StaticResource ErrorLabelStyle}"
+                               IsVisible="{Binding HayErrorEnLocalidad}" />
                 </VerticalStackLayout>
 
+                <!-- Boton guardar -->
                 <Button Text="Guardar Cambios"
                         Command="{Binding GuardarCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
                         IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
-                        BackgroundColor="#512BD4"
-                        TextColor="White" />
+                        Margin="0,8,0,0" />
 
             </VerticalStackLayout>
         </ScrollView>
-    </ContentPage.Content>
+
+        <controls:CargandoOverlay EstaCargando="{Binding IsBusy}" />
+
+    </Grid>
 
 </ContentPage>

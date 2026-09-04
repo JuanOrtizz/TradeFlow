@@ -2,6 +2,144 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TradeFlow.Views.EditarProductoView"
-             Title="Editar Producto">
+             xmlns:controls="clr-namespace:TradeFlow.Controls"
+             Title="Editar Producto"
+             xmlns:helpers="clr-namespace:TradeFlow.Helpers"
+             BackgroundColor="{StaticResource Background}">
+
+    <Grid RowDefinitions="*">
+
+        <ScrollView>
+            <VerticalStackLayout Padding="20" Spacing="16">
+
+                <Button Text="Volver"
+                        Style="{StaticResource BackButtonStyle}"
+                        Command="{Binding VolverCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+
+                <!-- Codigo -->
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Codigo (opcional)"
+                               Style="{StaticResource FieldLabelStyle}" />
+                    <Border StrokeShape="RoundRectangle 5" StrokeThickness="2"
+                                Stroke="{StaticResource BorderColor}" HeightRequest="50"
+                                BackgroundColor="{StaticResource CardBackground}" Padding="5,0">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                             Binding="{Binding Source={x:Reference CodigoEntry}, Path=IsFocused}"
+                                             Value="True">
+                                <Setter Property="Stroke" Value="DarkCyan" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border"
+                                             Binding="{Binding HayErrorEnCodigo}"
+                                             Value="True">
+                                <Setter Property="Stroke" Value="{StaticResource Danger}" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Entry x:Name="CodigoEntry"
+                                    Text="{Binding Codigo}"
+                                    Placeholder="Ej: PROD-001"
+                                    PlaceholderColor="{StaticResource TextLight}"
+                                    FontSize="16"
+                                    MaxLength="50"
+                                    BackgroundColor="Transparent"
+                                    TextColor="{StaticResource TextPrimary}">
+                            <Entry.Behaviors>
+                                <helpers:LimpiaErrorAlEnfocarBehavior Command="{Binding LimpiarErrorCommand}" CommandParameter="Codigo" />
+                            </Entry.Behaviors>
+                        </Entry>
+                    </Border>
+                    <Label Text="{Binding ErrorCodigo}"
+                               Style="{StaticResource ErrorLabelStyle}"
+                               IsVisible="{Binding HayErrorEnCodigo}" />
+                </VerticalStackLayout>
+
+                <!-- Nombre -->
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Nombre"
+                               Style="{StaticResource FieldLabelStyle}" />
+                    <Border StrokeShape="RoundRectangle 5" StrokeThickness="2"
+                                Stroke="{StaticResource BorderColor}" HeightRequest="50"
+                                BackgroundColor="{StaticResource CardBackground}" Padding="5,0">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                             Binding="{Binding Source={x:Reference NombreEntry}, Path=IsFocused}"
+                                             Value="True">
+                                <Setter Property="Stroke" Value="DarkCyan" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border"
+                                             Binding="{Binding HayErrorEnNombre}"
+                                             Value="True">
+                                <Setter Property="Stroke" Value="{StaticResource Danger}" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Entry x:Name="NombreEntry"
+                                    Text="{Binding Nombre}"
+                                    Placeholder="Nombre del producto"
+                                    PlaceholderColor="{StaticResource TextLight}"
+                                    FontSize="16"
+                                    MaxLength="100"
+                                    BackgroundColor="Transparent"
+                                    TextColor="{StaticResource TextPrimary}">
+                            <Entry.Behaviors>
+                                <helpers:LimpiaErrorAlEnfocarBehavior Command="{Binding LimpiarErrorCommand}" CommandParameter="Nombre" />
+                            </Entry.Behaviors>
+                        </Entry>
+                    </Border>
+                    <Label Text="{Binding ErrorNombre}"
+                               Style="{StaticResource ErrorLabelStyle}"
+                               IsVisible="{Binding HayErrorEnNombre}" />
+                </VerticalStackLayout>
+
+                <!-- Precio -->
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Precio"
+                               Style="{StaticResource FieldLabelStyle}" />
+                    <Border StrokeShape="RoundRectangle 5" StrokeThickness="2"
+                                Stroke="{StaticResource BorderColor}" HeightRequest="50"
+                                BackgroundColor="{StaticResource CardBackground}" Padding="5,0">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                             Binding="{Binding Source={x:Reference PrecioEntry}, Path=IsFocused}"
+                                             Value="True">
+                                <Setter Property="Stroke" Value="DarkCyan" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border"
+                                             Binding="{Binding HayErrorEnPrecio}"
+                                             Value="True">
+                                <Setter Property="Stroke" Value="{StaticResource Danger}" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Entry x:Name="PrecioEntry"
+                                    Text="{Binding PrecioTexto}"
+                                    Placeholder="0.00"
+                                    PlaceholderColor="{StaticResource TextLight}"
+                                    FontSize="16"
+                                    Keyboard="Numeric"
+                                    BackgroundColor="Transparent"
+                                    TextColor="{StaticResource TextPrimary}">
+                            <Entry.Behaviors>
+                                <helpers:LimpiaErrorAlEnfocarBehavior Command="{Binding LimpiarErrorCommand}" CommandParameter="Precio" />
+                            </Entry.Behaviors>
+                        </Entry>
+                    </Border>
+                    <Label Text="{Binding ErrorPrecio}"
+                               Style="{StaticResource ErrorLabelStyle}"
+                               IsVisible="{Binding HayErrorEnPrecio}" />
+                </VerticalStackLayout>
+
+                <!-- Boton guardar -->
+                <Button Text="Guardar Cambios"
+                        Command="{Binding GuardarCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
+                        Margin="0,8,0,0" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <controls:CargandoOverlay EstaCargando="{Binding IsBusy}" />
+
+    </Grid>
 
 </ContentPage>

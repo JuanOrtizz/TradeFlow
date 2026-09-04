@@ -9,7 +9,7 @@ using TradeFlow.Services;
 namespace TradeFlow.ViewModels
 {
     [QueryProperty(nameof(ClienteId), "clienteId")]
-    public class EditarClienteViewModel
+    public class EditarClienteViewModel : INotifyPropertyChanged
     {
         private readonly IClienteRepository _clienteRepository;
         private readonly ILocalidadRepository _localidadRepository;
@@ -237,6 +237,8 @@ namespace TradeFlow.ViewModels
         public ObservableCollection<LocalidadModel> ListaLocalidades { get; } = new ObservableCollection<LocalidadModel>();
 
         public ICommand GuardarCommand { get; }
+        public ICommand VolverCommand { get; }
+        public ICommand LimpiarErrorCommand { get; }
 
         public EditarClienteViewModel(
             IClienteRepository clienteRepository,
@@ -249,6 +251,31 @@ namespace TradeFlow.ViewModels
             _displayAlertService = displayAlertService;
             _validacionesService = validacionesService;
             GuardarCommand = new Command(async () => await GuardarAsync());
+            VolverCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
+            LimpiarErrorCommand = new Command<string>(LimpiarError);
+        }
+
+        private void LimpiarError(string campo)
+        {
+            switch (campo)
+            {
+                case "Nombre":
+                    HayErrorEnNombre = false;
+                    ErrorNombre = string.Empty;
+                    break;
+                case "Telefono":
+                    HayErrorEnTelefono = false;
+                    ErrorTelefono = string.Empty;
+                    break;
+                case "Direccion":
+                    HayErrorEnDireccion = false;
+                    ErrorDireccion = string.Empty;
+                    break;
+                case "Localidad":
+                    HayErrorEnLocalidad = false;
+                    ErrorLocalidad = string.Empty;
+                    break;
+            }
         }
 
         public async Task InicializarAsync()
@@ -291,24 +318,32 @@ namespace TradeFlow.ViewModels
         {
             if (Cliente == null) return;
 
+            ErrorNombre = _validacionesService.ValidarCampoVacio(Nombre);
+            HayErrorEnNombre = !string.IsNullOrEmpty(ErrorNombre);
+
+            ErrorTelefono = _validacionesService.ValidarCampoVacio(Telefono);
+            HayErrorEnTelefono = !string.IsNullOrEmpty(ErrorTelefono);
+
+            ErrorDireccion = _validacionesService.ValidarCampoVacio(Direccion);
+            HayErrorEnDireccion = !string.IsNullOrEmpty(ErrorDireccion);
+
+            ErrorLocalidad = _validacionesService.ValidarSeleccion(LocalidadSeleccionada, "localidad");
+            HayErrorEnLocalidad = !string.IsNullOrEmpty(ErrorLocalidad);
+
+            if (HayErrorEnNombre || HayErrorEnTelefono || HayErrorEnDireccion || HayErrorEnLocalidad)
+            {
+                return;
+            }
+
             try
             {
                 IsBusy = true;
 
-                ErrorNombre = _validacionesService.ValidarCampoVacio(Nombre);
-                HayErrorEnNombre = !string.IsNullOrEmpty(ErrorNombre);
-
-                ErrorTelefono = _validacionesService.ValidarCampoVacio(Telefono);
-                HayErrorEnTelefono = !string.IsNullOrEmpty(ErrorTelefono);
-
-                ErrorDireccion = _validacionesService.ValidarCampoVacio(Direccion);
-                HayErrorEnDireccion = !string.IsNullOrEmpty(ErrorDireccion);
-
-                ErrorLocalidad = _validacionesService.ValidarSeleccion(LocalidadSeleccionada, "localidad");
-                HayErrorEnLocalidad = !string.IsNullOrEmpty(ErrorLocalidad);
-
-                if (HayErrorEnNombre || HayErrorEnTelefono || HayErrorEnDireccion || HayErrorEnLocalidad)
+                // Validar duplicados (excluyo el propio registro)
+                if (await _clienteRepository.ExisteNombreAsync(Nombre, Cliente.Id))
                 {
+                    ErrorNombre = "Ya existe un cliente registrado con este nombre";
+                    HayErrorEnNombre = true;
                     return;
                 }
 
