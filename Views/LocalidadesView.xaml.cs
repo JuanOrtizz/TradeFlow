@@ -4,8 +4,6 @@ namespace TradeFlow.Views;
 
 public partial class LocalidadesView : ContentPage
 {
-    private bool _inicializado = false;
-
     public LocalidadesView(LocalidadesViewModel vm)
     {
         InitializeComponent();
@@ -16,13 +14,9 @@ public partial class LocalidadesView : ContentPage
     {
         base.OnAppearing();
 
-        if (!_inicializado)
+        if (BindingContext is LocalidadesViewModel vm)
         {
-            _inicializado = true;
-            if (BindingContext is LocalidadesViewModel vm)
-            {
-                await vm.InicializarAsync();
-            }
+            await vm.InicializarAsync();
         }
     }
 }

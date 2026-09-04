@@ -9,10 +9,11 @@ using TradeFlow.Views;
 
 namespace TradeFlow.ViewModels
 {
-    public class LocalidadesViewModel
+    public class LocalidadesViewModel : INotifyPropertyChanged
     {
         // Servicios y repositorios
         private readonly ILocalidadRepository _localidadRepository;
+        private readonly IClienteRepository _clienteRepository;
         private readonly IDisplayAlertService _displayAlertService;
 
         // Propiedades privadas
@@ -49,9 +50,10 @@ namespace TradeFlow.ViewModels
         public ICommand EliminarCommand { get; }
         public ICommand IrAAgregarCommand { get; }
 
-        public LocalidadesViewModel(ILocalidadRepository localidadRepository, IDisplayAlertService displayAlertService)
+        public LocalidadesViewModel(ILocalidadRepository localidadRepository, IClienteRepository clienteRepository, IDisplayAlertService displayAlertService)
         {
             _localidadRepository = localidadRepository;
+            _clienteRepository = clienteRepository;
             _displayAlertService = displayAlertService;
             EliminarCommand = new Command<LocalidadModel>(async (localidad) => await EliminarAsync(localidad));
             IrAAgregarCommand = new Command(async () => await Shell.Current.GoToAsync(nameof(AgregarLocalidadView)));
@@ -84,6 +86,16 @@ namespace TradeFlow.ViewModels
         {
             try
             {
+                var clientesAsociados = await _clienteRepository.ObtenerPorLocalidadAsync(localidad.Id);
+                if (clientesAsociados.Count > 0)
+                {
+                    await _displayAlertService.MostrarAlertAsync(
+                        "No se puede eliminar",
+                        $"La localidad {localidad.Nombre} tiene {clientesAsociados.Count} cliente(s) asociado(s). Elimine o reasigne esos clientes primero.",
+                        "OK");
+                    return;
+                }
+
                 var confirmar = await _displayAlertService.MostrarAlertConConfirmacionAsync(
                     "Eliminar", $"¿Eliminar la localidad {localidad.Nombre}?", "Eliminar", "Cancelar");
 

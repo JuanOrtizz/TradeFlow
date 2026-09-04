@@ -4,8 +4,6 @@ namespace TradeFlow.Views;
 
 public partial class ClientesView : ContentPage
 {
-    private bool _inicializado = false;
-
     public ClientesView(ClientesViewModel vm)
     {
         InitializeComponent();
@@ -16,13 +14,9 @@ public partial class ClientesView : ContentPage
     {
         base.OnAppearing();
 
-        if (!_inicializado)
+        if (BindingContext is ClientesViewModel vm)
         {
-            _inicializado = true;
-            if (BindingContext is ClientesViewModel vm)
-            {
-                await vm.InicializarAsync();
-            }
+            await vm.InicializarAsync();
         }
     }
 }

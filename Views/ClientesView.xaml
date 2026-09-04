@@ -1,11 +1,164 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:helpers="clr-namespace:TradeFlow.Helpers"
              x:Class="TradeFlow.Views.ClientesView"
-             Title="Clientes">
+             xmlns:controls="clr-namespace:TradeFlow.Controls"
+             Title="Clientes"
+             BackgroundColor="{StaticResource Background}">
 
-    <Label Text="Clientes - Por implementar"
-           VerticalOptions="Center"
-           HorizontalOptions="Center" />
+    <Grid RowDefinitions="Auto,Auto,Auto,*"
+          Padding="20">
+
+        <!-- SearchBar + boton agregar -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <Border
+                StrokeShape="4"
+                Stroke="LightGray"
+                StrokeThickness="{StaticResource BorderColor}"
+                >
+
+                <Border.Triggers>
+                    <DataTrigger TargetType="Border"
+                     Binding="{Binding Source={x:Reference BarraBusqueda}, Path=IsFocused}"
+                     Value="True">
+                        <Setter Property="Stroke" Value="DarkCyan" />
+                    </DataTrigger>
+                </Border.Triggers>
+                
+                
+                <SearchBar Grid.Column="0"
+                        x:Name="BarraBusqueda"
+                        Placeholder="Buscar cliente..."
+                        Text="{Binding TextoBusqueda}"
+                        Style="{StaticResource SearchBarStyle}"
+                        Margin="0" 
+                        CancelButtonColor="Red"
+                         />
+                
+            </Border>
+
+            <Button Grid.Column="1"
+                    Text="Agregar"
+                    Command="{Binding IrAAgregarCommand}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Padding="12"
+                    CornerRadius="12"
+                    FontSize="16"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center" />
+        </Grid>
+
+        <!-- Filtro por localidad -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="4,10,4,0">
+            <Label Grid.Column="0"
+                   Text="Localidad:"
+                   Style="{StaticResource FieldLabelStyle}"
+                   VerticalOptions="Center"
+                   Margin="0,0,0,0" />
+            <Border Grid.Column="1"
+                    StrokeShape="RoundRectangle 18"
+                    StrokeThickness="1"
+                    Stroke="{StaticResource BorderColor}"
+                    BackgroundColor="{StaticResource CardBackground}"
+                    Padding="12,2"
+                    HeightRequest="30">
+                <Border.Triggers>
+                    <DataTrigger TargetType="Border"
+                                 Binding="{Binding Source={x:Reference LocalidadPicker}, Path=IsFocused}"
+                                 Value="True">
+                        <Setter Property="Stroke" Value="DarkCyan" />
+                    </DataTrigger>
+                </Border.Triggers>
+
+                <Picker x:Name="LocalidadPicker"
+                        ItemsSource="{Binding ListaLocalidades}"
+                        SelectedIndex="{Binding IndiceLocalidad}"
+                        ItemDisplayBinding="{Binding Nombre}"
+                        FontSize="14"
+                        BackgroundColor="Transparent"
+                        TextColor="{StaticResource TextPrimary}"
+                        VerticalOptions="Center" />
+            </Border>
+        </Grid>
+
+        <!-- Lista de clientes -->
+
+        <CollectionView 
+            Grid.Row="3"
+            ItemsSource="{Binding ListaClientes}"
+            IsVisible="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
+            Margin="0,8,0,0"
+            >
+
+            <CollectionView.EmptyView>
+                <Label Text="No hay clientes registrados"
+               Style="{StaticResource EmptyStateStyle}"
+               Margin="20,40" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical"
+                   ItemSpacing="5" />
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+
+                    <Border Style="{StaticResource CardStyle}"
+                       helpers:HandCursor.IsEnabled="True"
+                       Margin="20,0,20,8"
+                       Padding="16">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.VerDetalleCommand}"
+                              CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+
+                            <!-- Avatar -->
+                            <Border Grid.Column="0"
+                               BackgroundColor="{StaticResource SuccessLight}"
+                               WidthRequest="44" HeightRequest="44"
+                               Padding="0"
+                               StrokeThickness="1"
+                               Stroke="LightGray"
+                               StrokeShape="RoundRectangle 22"
+                               >
+                                <Label Text="{Binding Nombre, Converter={StaticResource FirstLetterConverter}}"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource Success}"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+                            </Border>
+
+                            <!-- Info -->
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="3">
+                                <Label Text="{Binding Nombre}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource TextPrimary}" />
+                                 <Label Text="{Binding Telefono}"
+                                   FontSize="13"
+                                   TextColor="{StaticResource TextSecondary}" />
+                            </VerticalStackLayout>
+
+                            <!-- Flecha -->
+                            <Label Grid.Column="2"
+                                Text="&#x203A;"
+                                FontSize="24"
+                                TextColor="{StaticResource TextLight}"
+                                VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <controls:CargandoOverlay EstaCargando="{Binding IsBusy}" />
+
+    </Grid>
 
 </ContentPage>
