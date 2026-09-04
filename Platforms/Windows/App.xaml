@@ -5,4 +5,21 @@
     xmlns:maui="using:Microsoft.Maui"
     xmlns:local="using:TradeFlow.WinUI">
 
+    <!-- Pisa el accent violeta del sistema por DarkCyan en TODOS los controles nativos -->
+    <maui:MauiWinUIApplication.Resources>
+        <ResourceDictionary>
+            <Color x:Key="SystemAccentColor">#008B8B</Color>
+            <StaticResource x:Key="SystemAccentColorDark1" ResourceKey="SystemAccentColor" />
+            <StaticResource x:Key="SystemAccentColorDark2" ResourceKey="SystemAccentColor" />
+            <StaticResource x:Key="SystemAccentColorDark3" ResourceKey="SystemAccentColor" />
+            <StaticResource x:Key="SystemAccentColorLight1" ResourceKey="SystemAccentColor" />
+            <StaticResource x:Key="SystemAccentColorLight2" ResourceKey="SystemAccentColor" />
+            <StaticResource x:Key="SystemAccentColorLight3" ResourceKey="SystemAccentColor" />
+
+            <!-- Elimina el subrayado del Entry (el wrapper Border ya da la definicion visual) -->
+            <Thickness x:Key="TextControlBorderThemeThickness">0</Thickness>
+            <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+        </ResourceDictionary>
+    </maui:MauiWinUIApplication.Resources>
+
 </maui:MauiWinUIApplication>

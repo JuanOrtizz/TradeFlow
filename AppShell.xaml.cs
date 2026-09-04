@@ -11,6 +11,7 @@ namespace TradeFlow
             // Rutas secundarias (navegación programática)
             Routing.RegisterRoute(nameof(CrearFacturaView), typeof(CrearFacturaView));
             Routing.RegisterRoute(nameof(DetalleFacturaView), typeof(DetalleFacturaView));
+            Routing.RegisterRoute(nameof(VistaPreviaFacturaView), typeof(VistaPreviaFacturaView));
             Routing.RegisterRoute(nameof(AgregarProductoView), typeof(AgregarProductoView));
             Routing.RegisterRoute(nameof(DetalleProductoView), typeof(DetalleProductoView));
             Routing.RegisterRoute(nameof(AgregarClienteView), typeof(AgregarClienteView));

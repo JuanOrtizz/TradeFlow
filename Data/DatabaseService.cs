@@ -5,17 +5,27 @@ namespace TradeFlow.Data
 {
     public class DatabaseService
     {
-        private readonly SQLiteAsyncConnection _db;
+        private readonly string _dbPath;
+        private SQLiteAsyncConnection _db;
         private bool _initialized;
+
+        public string DbPath => _dbPath;
 
         public DatabaseService(string dbPath)
         {
+            _dbPath = dbPath;
             _db = new SQLiteAsyncConnection(dbPath);
         }
 
         public SQLiteAsyncConnection Connection()
         {
             return _db;
+        }
+
+        public async Task CerrarConexionAsync()
+        {
+            await _db.CloseAsync();
+            _initialized = false;
         }
 
         public async Task InitializeAsync()

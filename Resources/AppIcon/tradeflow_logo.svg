@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Letra T robusta y moderna -->
+  <rect x="212" y="210" width="460" height="130" rx="65" fill="#1E293B" />
+  <rect x="377" y="210" width="130" height="580" rx="65" fill="#1E293B" />
+  
+  <!-- Barras de Flujo superpuestas -->
+  <rect x="437" y="400" width="360" height="130" rx="65" fill="#00F2FE" />
+  <rect x="437" y="580" width="220" height="130" rx="65" fill="#43E97B" />
+</svg>

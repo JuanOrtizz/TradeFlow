@@ -6,6 +6,9 @@
         {
             InitializeComponent();
 
+            // Fuerzo modo claro siempre, sin importar el tema del sistema
+            UserAppTheme = AppTheme.Light;
+
             MainPage = new AppShell();
         }
     }

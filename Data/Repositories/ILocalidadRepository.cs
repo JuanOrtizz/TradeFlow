@@ -9,5 +9,6 @@ namespace TradeFlow.Data.Repositories
         Task<LocalidadModel> RegistrarAsync(string nombre);
         Task<int> GuardarAsync(LocalidadModel localidad);
         Task<int> EliminarAsync(LocalidadModel localidad);
+        Task<bool> ExisteNombreAsync(string nombre, int idExcluido = 0);
     }
 }

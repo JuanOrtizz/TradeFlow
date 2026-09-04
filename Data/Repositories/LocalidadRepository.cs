@@ -25,6 +25,14 @@ namespace TradeFlow.Data.Repositories
             }
         }
 
+        public async Task<bool> ExisteNombreAsync(string nombre, int idExcluido = 0)
+        {
+            var normalizado = nombre.Trim().ToLower();
+            return await _db.Table<LocalidadModel>()
+                .Where(l => l.Nombre.ToLower() == normalizado && l.Id != idExcluido)
+                .CountAsync() > 0;
+        }
+
         public async Task<int> GuardarAsync(LocalidadModel localidad)
         {
             var result = await _db.UpdateAsync(localidad);

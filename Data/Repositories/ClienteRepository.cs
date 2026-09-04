@@ -14,7 +14,13 @@ namespace TradeFlow.Data.Repositories
 
         public async Task<IReadOnlyList<ClienteModel>> BuscarPorNombreAsync(string nombre)
         {
-            return await _db.Table<ClienteModel>().Where(c => c.Nombre.Contains(nombre)).ToListAsync();
+            var termino = nombre.Trim();
+
+            var candidatos = await _db.QueryAsync<ClienteModel>(
+                "SELECT * FROM ClienteModel WHERE Nombre LIKE ?",
+                $"%{termino}%");
+
+            return candidatos.Where(c => c.Nombre.IndexOf(termino, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
         }
 
         public async Task<int> EliminarAsync(ClienteModel cliente)
@@ -28,6 +34,14 @@ namespace TradeFlow.Data.Repositories
             {
                 throw new Exception("Error al eliminar el cliente.");
             }
+        }
+
+        public async Task<bool> ExisteNombreAsync(string nombre, int idExcluido = 0)
+        {
+            var normalizado = nombre.Trim().ToLower();
+            return await _db.Table<ClienteModel>()
+                .Where(c => c.Nombre.ToLower() == normalizado && c.Id != idExcluido)
+                .CountAsync() > 0;
         }
 
         public async Task<int> GuardarAsync(ClienteModel cliente)

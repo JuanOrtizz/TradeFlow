@@ -8,7 +8,9 @@ namespace TradeFlow.Data.Repositories
         Task<ProductoModel?> ObtenerPorIdAsync(int id);
         Task<int> GuardarAsync(ProductoModel producto);
         Task<int> EliminarAsync(ProductoModel producto);
-        Task<IReadOnlyList<ProductoModel>> BuscarPorNombreAsync(string nombre);
+        Task<bool> ExisteNombreAsync(string nombre, int idExcluido = 0);
+        Task<bool> ExisteCodigoAsync(string codigo, int idExcluido = 0);
+        Task<IReadOnlyList<ProductoModel>> BuscarAsync(string termino);
         Task<ProductoModel> RegistrarAsync(string nombre, string codigo, decimal precio);
     }
 }

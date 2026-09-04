@@ -11,6 +11,8 @@ namespace TradeFlow.Data.Repositories
         Task<int> EliminarAsync(FacturaModel factura);
         Task<FacturaModel> RegistrarAsync(ClienteModel cliente, List<DetalleFacturaModel> items);
         Task<IReadOnlyList<FacturaModel>> ObtenerPorClienteAsync(int clienteId);
+        Task<int> ContarPorClienteAsync(int clienteId);
+        Task<IReadOnlyList<FacturaModel>> BuscarPorNumeroAsync(string numero);
         Task<IReadOnlyList<FacturaModel>> ObtenerPorFechaAsync(DateTime fecha);
         Task<IReadOnlyList<FacturaModel>> ObtenerUltimasDiezAsync();
     }

@@ -14,6 +14,8 @@ namespace TradeFlow.Data.Repositories
 
         public async Task<int> EliminarAsync(FacturaModel factura)
         {
+            await _db.ExecuteAsync("DELETE FROM DetalleFacturaModel WHERE FacturaId = ?", factura.Id);
+
             var result = await _db.DeleteAsync(factura);
             if (result > 0)
             {
@@ -48,9 +50,29 @@ namespace TradeFlow.Data.Repositories
             return await _db.Table<FacturaModel>().Where(f => f.ClienteId == clienteId).ToListAsync();
         }
 
+        public async Task<int> ContarPorClienteAsync(int clienteId)
+        {
+            return await _db.Table<FacturaModel>().Where(f => f.ClienteId == clienteId).CountAsync();
+        }
+
+        public async Task<IReadOnlyList<FacturaModel>> BuscarPorNumeroAsync(string numero)
+        {
+            var termino = numero.Trim();
+            return await _db.QueryAsync<FacturaModel>(
+                "SELECT * FROM FacturaModel WHERE CAST(Id AS TEXT) LIKE ?",
+                $"%{termino}%");
+        }
+
         public async Task<IReadOnlyList<FacturaModel>> ObtenerPorFechaAsync(DateTime fecha)
         {
-            return await _db.Table<FacturaModel>().Where(f => f.Fecha.Date == fecha.Date).ToListAsync();
+            // sqlite guarda las fechas como ticks enteros, asi que DATE() de SQL no las entiende.
+            // Comparo por rango: >= inicio del dia y < inicio del dia siguiente
+            var desde = fecha.Date;
+            var hasta = desde.AddDays(1);
+
+            return await _db.Table<FacturaModel>()
+                .Where(f => f.Fecha >= desde && f.Fecha < hasta)
+                .ToListAsync();
         }
 
         public async Task<FacturaModel?> ObtenerPorIdAsync(int id)
