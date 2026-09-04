@@ -2,9 +2,9 @@ using TradeFlow.ViewModels;
 
 namespace TradeFlow.Views;
 
-public partial class DetalleFacturaView : ContentPage
+public partial class VistaPreviaFacturaView : ContentPage
 {
-    public DetalleFacturaView(DetalleFacturaViewModel vm)
+    public VistaPreviaFacturaView(VistaPreviaFacturaViewModel vm)
     {
         InitializeComponent();
         BindingContext = vm;
@@ -14,7 +14,7 @@ public partial class DetalleFacturaView : ContentPage
     {
         base.OnAppearing();
 
-        if (BindingContext is DetalleFacturaViewModel vm)
+        if (BindingContext is VistaPreviaFacturaViewModel vm)
         {
             await vm.InicializarAsync();
         }

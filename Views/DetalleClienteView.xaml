@@ -1,11 +1,186 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:helpers="clr-namespace:TradeFlow.Helpers"
              x:Class="TradeFlow.Views.DetalleClienteView"
-             Title="Detalle Cliente">
+             xmlns:controls="clr-namespace:TradeFlow.Controls"
+             Title="Detalle Cliente"
+             BackgroundColor="{StaticResource Background}">
 
-    <Label Text="Detalle Cliente - Por implementar"
-           VerticalOptions="Center"
-           HorizontalOptions="Center" />
+    <Grid RowDefinitions="*">
+
+        <ScrollView IsVisible="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}">
+            <VerticalStackLayout Padding="20" Spacing="16">
+
+                <Grid
+                    RowDefinitions="*"
+                    ColumnDefinitions="*, 2*"
+                    >
+                    <Button 
+                        Grid.Column="0"
+                        Text="Volver"
+                        Style="{StaticResource BackButtonStyle}"
+                        Command="{Binding VolverCommand}"
+                        />
+
+                    <!-- Botones de accion -->
+                    <HorizontalStackLayout
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Spacing="5"
+                        >
+                        <Button
+                            Text="Editar"
+                            Command="{Binding EditarCommand}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            BackgroundColor="DarkGoldenrod"
+                            />
+
+                        <Button 
+                            Grid.Column="1"
+                            Text="Eliminar"
+                            Command="{Binding EliminarCommand}"
+                            Style="{StaticResource DangerButtonStyle}" />
+                    </HorizontalStackLayout>
+
+                </Grid>
+                <!-- Datos -->
+                <Border Style="{StaticResource CardStyle}" Padding="20">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="Informacion del cliente"
+                               Style="{StaticResource SectionTitleStyle}" />
+
+                        <BoxView HeightRequest="1" Color="Black" />
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Label Grid.Column="0" Text="Nombre:"
+                                   FontAttributes="Bold"
+                                   TextColor="Black" />
+                            <Label Grid.Column="1" Text="{Binding Cliente.Nombre}"
+                                   TextColor="{StaticResource TextPrimary}" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Label Grid.Column="0" Text="Telefono:"
+                                   TextColor="Black" 
+                                   FontAttributes="Bold"
+                                   />
+                            <Label Grid.Column="1" Text="{Binding Cliente.Telefono}"
+                                   TextColor="{StaticResource TextPrimary}" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Label Grid.Column="0" Text="Direccion:"
+                                   FontAttributes="Bold"
+                                   TextColor="Black" />
+                            <Label Grid.Column="1" Text="{Binding Cliente.Direccion}"
+                                   TextColor="{StaticResource TextPrimary}" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Label Grid.Column="0" Text="Localidad:"
+                                   FontAttributes="Bold"
+                                   TextColor="Black" />
+                            <Label Grid.Column="1" Text="{Binding Cliente.Localidad.Nombre}"
+                                   TextColor="{StaticResource TextPrimary}" />
+                        </Grid>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <VerticalStackLayout Padding="0" Spacing="4" Margin="0, 20, 0, 10">
+                    <Label Text="Facturas del cliente"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource TextPrimary}" />
+                </VerticalStackLayout>
+
+                <CollectionView 
+                    ItemsSource="{Binding ListaFacturasCliente}"
+                    Margin="0"
+                    >
+
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical"
+                              ItemSpacing="5" />
+                    </CollectionView.ItemsLayout>
+
+                    <CollectionView.EmptyView>
+                        
+                        <Label Text="No tiene facturas registradas"
+                                FontSize="18"
+                                TextColor="{StaticResource TextSecondary}"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"
+                                Margin="150"
+                               />
+
+                    </CollectionView.EmptyView>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border BackgroundColor="{StaticResource CardBackground}"
+                                StrokeShape="RoundRectangle 14"
+                                Stroke="{StaticResource BorderColor}"
+                                StrokeThickness="1"
+                                Padding="20"
+                                Margin="20"
+                                helpers:HandCursor.IsEnabled="True"
+                                >
+
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.VerDetalleCommand}"
+                                                          CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+
+                                <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
+
+                                    <!-- Fila 0: Factura # + Cliente -->
+                                    <Label Grid.Row="0" Grid.Column="0"
+                                       Text="{Binding Id, StringFormat='Factura #{0}'}"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       VerticalOptions="Center"
+                                       LineBreakMode="TailTruncation"
+                                       MaxLines="1" />      
+
+                                    <Label Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding Cliente.Nombre}"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       HorizontalOptions="End"
+                                       VerticalOptions="Center"
+                                       LineBreakMode="TailTruncation"
+                                       MaxLines="1" />
+
+                                    <!-- Fila 1: Fecha + Total -->
+                                    <Label Grid.Row="1" Grid.Column="0"
+                                       Text="{Binding Fecha, StringFormat='{0:dd/MM/yyyy}'}"
+                                       FontSize="13"
+                                       TextColor="{StaticResource TextSecondary}"
+                                       VerticalOptions="Center" />
+
+                                    <Label Grid.Row="1" Grid.Column="1"
+                                       Text="{Binding Total, StringFormat='${0:N2}'}"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource Success}"
+                                       HorizontalOptions="End"
+                                       VerticalOptions="Center" />
+
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <controls:CargandoOverlay EstaCargando="{Binding IsBusy}" />
+
+    </Grid>
 
 </ContentPage>

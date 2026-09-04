@@ -1,11 +1,108 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TradeFlow.ViewModels"
+             xmlns:helpers="clr-namespace:TradeFlow.Helpers"
              x:Class="TradeFlow.Views.InicioView"
-             Title="Inicio">
+             xmlns:controls="clr-namespace:TradeFlow.Controls"
+             Title="Inicio"
+             Shell.NavBarIsVisible="True">
 
-    <Label Text="Inicio - Por implementar"
-           VerticalOptions="Center"
-           HorizontalOptions="Center" />
+    <Grid RowDefinitions="*" BackgroundColor="{StaticResource Background}" Padding="20">
+
+        <!-- Lista de facturas -->
+        <CollectionView ItemsSource="{Binding ListaFacturas}"
+                        IsVisible="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
+                        Margin="0">
+
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical"
+                           ItemSpacing="5" />
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.Header>
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Ultimas 10 facturas"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimary}" />
+                </VerticalStackLayout>
+            </CollectionView.Header>
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="40" Spacing="12">
+                    <Label Text="No hay facturas recientes"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource TextSecondary}"
+                           HorizontalOptions="Center" />
+                    <Label Text="Las facturas creadas aparecerán aquí"
+                           FontSize="14"
+                           TextColor="{StaticResource TextLight}"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border BackgroundColor="{StaticResource CardBackground}"
+                            StrokeShape="RoundRectangle 14"
+                            Stroke="{StaticResource BorderColor}"
+                            StrokeThickness="1"
+                            Padding="20"
+                            Margin="20"
+                            helpers:HandCursor.IsEnabled="True">
+
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.VerDetalleCommand}"
+                                                  CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+
+                        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
+
+                            <!-- Fila 0: Factura # + Cliente -->
+                            <Label Grid.Row="0" Grid.Column="0"
+                                   Text="{Binding Id, StringFormat='Factura #{0}'}"
+                                   FontSize="15"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   VerticalOptions="Center"
+                                   LineBreakMode="TailTruncation"
+                                   MaxLines="1" />
+
+                            <Label Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding Cliente.Nombre}"
+                                   FontSize="15"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   HorizontalOptions="End"
+                                   VerticalOptions="Center"
+                                   LineBreakMode="TailTruncation"
+                                   MaxLines="1" />
+
+                            <!-- Fila 1: Fecha + Total -->
+                            <Label Grid.Row="1" Grid.Column="0"
+                                   Text="{Binding Fecha, StringFormat='{0:dd/MM/yyyy}'}"
+                                   FontSize="13"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   VerticalOptions="Center" />
+
+                            <Label Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding Total, StringFormat='${0:N2}'}"
+                                   FontSize="15"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource Success}"
+                                   HorizontalOptions="End"
+                                   VerticalOptions="Center" />
+
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <controls:CargandoOverlay EstaCargando="{Binding IsBusy}" />
+
+    </Grid>
 
 </ContentPage>

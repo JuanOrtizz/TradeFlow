@@ -2,10 +2,400 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TradeFlow.Views.CrearFacturaView"
-             Title="Crear Factura">
+             Title="Crear Factura"
+             xmlns:helpers="clr-namespace:TradeFlow.Helpers"
+             xmlns:controls="clr-namespace:TradeFlow.Controls"
+             BackgroundColor="{StaticResource Background}">
 
-    <Label Text="Crear Factura - Por implementar"
-           VerticalOptions="Center"
-           HorizontalOptions="Center" />
+    <Grid RowDefinitions="*">
+
+        <ScrollView>
+            <VerticalStackLayout Padding="20" Spacing="16">
+
+                <Button Text="Volver"
+                        Style="{StaticResource BackButtonStyle}"
+                        Command="{Binding VolverCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+
+                <!-- Cliente -->
+                <Frame Style="{StaticResource CardStyle}" Padding="16">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Cliente"
+                               Style="{StaticResource FieldLabelStyle}" />
+
+                        <Border StrokeShape="RoundRectangle 5" StrokeThickness="2"
+                                Stroke="{StaticResource BorderColor}" HeightRequest="50"
+                                BackgroundColor="{StaticResource CardBackground}" Padding="5,0">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border"
+                                             Binding="{Binding Source={x:Reference ClienteBusqueda}, Path=IsFocused}"
+                                             Value="True">
+                                    <Setter Property="Stroke" Value="DarkCyan" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="Border"
+                                             Binding="{Binding HayErrorEnCliente}"
+                                             Value="True">
+                                    <Setter Property="Stroke" Value="{StaticResource Danger}" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <SearchBar x:Name="ClienteBusqueda"
+                                       Style="{StaticResource LookupSearchBarStyle}"
+                                       Text="{Binding TextoBuscarCliente}"
+                                       Placeholder="Buscar cliente por nombre..."
+                                       IsEnabled="{Binding TieneClienteSeleccionado, Converter={StaticResource InvertBoolConverter}}">
+                                <SearchBar.Behaviors>
+                                    <helpers:LimpiaErrorAlEnfocarBehavior Command="{Binding LimpiarErrorCommand}" CommandParameter="Cliente" />
+                                    <helpers:EjecutarComandoAlDesenfocarBehavior Command="{Binding OcultarSugerenciasClienteCommand}" />
+                                </SearchBar.Behaviors>
+                            </SearchBar>
+                        </Border>
+
+                        <!-- Cliente seleccionado -->
+                        <Border IsVisible="{Binding TieneClienteSeleccionado}"
+                                StrokeShape="RoundRectangle 5" StrokeThickness="0"
+                                BackgroundColor="{StaticResource PrimaryLight}" Padding="10,6">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Label Text="✓"
+                                       TextColor="{StaticResource Primary}"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding ClienteSeleccionado.Nombre}"
+                                       TextColor="{StaticResource Primary}"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       Margin="6,0,0,0"
+                                       VerticalOptions="Center" />
+                                <Label Grid.Column="2"
+                                       Text="✕"
+                                       TextColor="{StaticResource Primary}"
+                                       FontSize="14"
+                                       VerticalOptions="Center"
+                                       helpers:HandCursor.IsEnabled="True">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding DeseleccionarClienteCommand}" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </Grid>
+                        </Border>
+
+                        <!-- Sugerencias de clientes -->
+                        <Border IsVisible="{Binding HaySugerenciasClientes}"
+                                StrokeShape="RoundRectangle 5" StrokeThickness="1"
+                                Stroke="{StaticResource BorderColor}"
+                                BackgroundColor="{StaticResource CardBackground}" Padding="0">
+                            <CollectionView ItemsSource="{Binding SugerenciasClientes}">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Padding="12,10" ColumnDefinitions="*,Auto"
+                                              helpers:HandCursor.IsEnabled="True">
+                                            <Grid.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SeleccionarClienteCommand}"
+                                                                      CommandParameter="{Binding .}" />
+                                            </Grid.GestureRecognizers>
+                                            <Label Text="{Binding Nombre}"
+                                                   TextColor="{StaticResource TextPrimary}"
+                                                   FontSize="15" />
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Telefono}"
+                                                   TextColor="{StaticResource TextLight}"
+                                                   FontSize="13" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </Border>
+
+                        <Label Text="{Binding ErrorCliente}"
+                               Style="{StaticResource ErrorLabelStyle}"
+                               IsVisible="{Binding HayErrorEnCliente}" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Seleccionar producto -->
+                <Frame Style="{StaticResource CardStyle}" Padding="16">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Agregar item"
+                               Style="{StaticResource SectionTitleStyle}" />
+
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Producto"
+                                   Style="{StaticResource FieldLabelStyle}" />
+
+                            <Border StrokeShape="RoundRectangle 5" StrokeThickness="2"
+                                    Stroke="{StaticResource BorderColor}" HeightRequest="50"
+                                    BackgroundColor="{StaticResource CardBackground}" Padding="5,0">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border"
+                                                 Binding="{Binding Source={x:Reference ProductoBusqueda}, Path=IsFocused}"
+                                                 Value="True">
+                                        <Setter Property="Stroke" Value="DarkCyan" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border"
+                                                 Binding="{Binding HayErrorEnProducto}"
+                                                 Value="True">
+                                        <Setter Property="Stroke" Value="{StaticResource Danger}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <SearchBar x:Name="ProductoBusqueda"
+                                           Style="{StaticResource LookupSearchBarStyle}"
+                                           Text="{Binding TextoBuscarProducto}"
+                                           Placeholder="Buscar producto por nombre o código..."
+                                           IsEnabled="{Binding TieneProductoSeleccionado, Converter={StaticResource InvertBoolConverter}}">
+                                    <SearchBar.Behaviors>
+                                        <helpers:LimpiaErrorAlEnfocarBehavior Command="{Binding LimpiarErrorCommand}" CommandParameter="Producto" />
+                                        <helpers:EjecutarComandoAlDesenfocarBehavior Command="{Binding OcultarSugerenciasProductoCommand}" />
+                                    </SearchBar.Behaviors>
+                                </SearchBar>
+                            </Border>
+
+                            <!-- Producto seleccionado -->
+                            <Border IsVisible="{Binding TieneProductoSeleccionado}"
+                                    StrokeShape="RoundRectangle 5" StrokeThickness="0"
+                                    BackgroundColor="{StaticResource PrimaryLight}" Padding="10,6">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <Label Text="✓"
+                                           TextColor="{StaticResource Primary}"
+                                           FontSize="14"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding ProductoSeleccionado.Nombre}"
+                                           TextColor="{StaticResource Primary}"
+                                           FontSize="14"
+                                           FontAttributes="Bold"
+                                           Margin="6,0,0,0"
+                                           VerticalOptions="Center" />
+                                    <Label Grid.Column="2"
+                                           Text="✕"
+                                           TextColor="{StaticResource Primary}"
+                                           FontSize="14"
+                                           VerticalOptions="Center"
+                                           helpers:HandCursor.IsEnabled="True">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding DeseleccionarProductoCommand}" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                </Grid>
+                            </Border>
+
+                            <!-- Sugerencias de productos -->
+                            <Border IsVisible="{Binding HaySugerenciasProductos}"
+                                    StrokeShape="RoundRectangle 5" StrokeThickness="1"
+                                    Stroke="{StaticResource BorderColor}"
+                                    BackgroundColor="{StaticResource CardBackground}" Padding="0">
+                                <CollectionView ItemsSource="{Binding SugerenciasProductos}">
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Padding="12,10" ColumnDefinitions="*,Auto"
+                                                  helpers:HandCursor.IsEnabled="True">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SeleccionarProductoCommand}"
+                                                                          CommandParameter="{Binding .}" />
+                                                </Grid.GestureRecognizers>
+                                                <VerticalStackLayout Spacing="2">
+                                                    <Label Text="{Binding Nombre}"
+                                                           TextColor="{StaticResource TextPrimary}"
+                                                           FontSize="15" />
+                                                    <Label Text="{Binding Codigo, Converter={StaticResource TextoVacioConverter}, ConverterParameter='Sin Codigo'}"
+                                                           TextColor="{StaticResource TextLight}"
+                                                           FontSize="12" />
+                                                </VerticalStackLayout>
+                                                <Label Grid.Column="1"
+                                                       Text="{Binding Precio, StringFormat='${0:N2}'}"
+                                                       TextColor="{StaticResource TextSecondary}"
+                                                       FontSize="13"
+                                                       VerticalOptions="Center" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </Border>
+
+                            <Label Text="{Binding ErrorProducto}"
+                                   Style="{StaticResource ErrorLabelStyle}"
+                                   IsVisible="{Binding HayErrorEnProducto}" />
+                        </VerticalStackLayout>
+
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                            <VerticalStackLayout Grid.Column="0" Spacing="4">
+                                <Label Text="Cantidad"
+                                       Style="{StaticResource FieldLabelStyle}" />
+                                <Border StrokeShape="RoundRectangle 5" StrokeThickness="2"
+                                        Stroke="{StaticResource BorderColor}" HeightRequest="50"
+                                        BackgroundColor="{StaticResource CardBackground}" Padding="5,0">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border"
+                                                     Binding="{Binding Source={x:Reference CantidadEntry}, Path=IsFocused}"
+                                                     Value="True">
+                                            <Setter Property="Stroke" Value="DarkCyan" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Entry x:Name="CantidadEntry"
+                                           Text="{Binding Cantidad}"
+                                           Keyboard="Numeric"
+                                           PlaceholderColor="{StaticResource TextLight}"
+                                           FontSize="16"
+                                           BackgroundColor="Transparent"
+                                           TextColor="{StaticResource TextPrimary}" />
+                                </Border>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                <Label Text="Descuento"
+                                       Style="{StaticResource FieldLabelStyle}" />
+                                <Border StrokeShape="RoundRectangle 5" StrokeThickness="2"
+                                        Stroke="{StaticResource BorderColor}" HeightRequest="50"
+                                        BackgroundColor="{StaticResource CardBackground}" Padding="5,0">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border"
+                                                     Binding="{Binding Source={x:Reference DescuentoPicker}, Path=IsFocused}"
+                                                     Value="True">
+                                            <Setter Property="Stroke" Value="DarkCyan" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Picker x:Name="DescuentoPicker"
+                                            ItemsSource="{Binding OpcionesDescuento}"
+                                            SelectedIndex="{Binding IndiceDescuento}"
+                                            FontSize="16"
+                                            BackgroundColor="Transparent"
+                                            TextColor="{StaticResource TextPrimary}" />
+                                </Border>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="2" Spacing="4">
+                                <Label Text="Subtotal"
+                                       Style="{StaticResource FieldLabelStyle}" />
+                                <Label Text="{Binding SubtotalItem, StringFormat='${0:N2}'}"
+                                       Style="{StaticResource PriceStyle}"
+                                       HeightRequest="50"
+                                       VerticalOptions="Center"
+                                       VerticalTextAlignment="Center" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Button Text="+ Agregar Item"
+                                Command="{Binding AgregarItemCommand}"
+                                Style="{StaticResource CompactOutlineButtonStyle}" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Items agregados -->
+                <Label Text="Items en la factura"
+                       Style="{StaticResource SectionTitleStyle}" />
+
+                <CollectionView ItemsSource="{Binding ItemsFactura}">
+                    <CollectionView.EmptyView>
+                        <Label Text="No hay items agregados"
+                               Style="{StaticResource EmptyStateStyle}" />
+                    </CollectionView.EmptyView>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Style="{StaticResource CardStyle}"
+                                   Margin="0,0,0,6"
+                                   Padding="14">
+                                <Grid RowDefinitions="Auto,Auto" RowSpacing="10">
+
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                            <Label Text="{Binding ProductoNombre}"
+                                                   FontSize="15"
+                                                   FontAttributes="Bold"
+                                                   TextColor="{StaticResource TextPrimary}" />
+                                            <Label Text="{Binding Codigo, Converter={StaticResource TextoVacioConverter}, ConverterParameter='Sin Codigo'}"
+                                                   FontSize="12"
+                                                   TextColor="{StaticResource TextSecondary}" />
+                                            <Label Text="{Binding PrecioFinal, StringFormat='${0:N2} c/u'}"
+                                                   FontSize="12"
+                                                   TextColor="{StaticResource TextSecondary}" />
+                                            <Label Text="{Binding DescuentoTexto}"
+                                                   FontSize="12"
+                                                   IsVisible="{Binding TieneDescuento}"
+                                                   TextColor="{StaticResource Danger}" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="1"
+                                               Text="{Binding Subtotal, StringFormat='${0:N2}'}"
+                                               Style="{StaticResource PriceStyle}"
+                                               VerticalOptions="Center" />
+                                    </Grid>
+
+                                    <Grid Grid.Row="1" ColumnDefinitions="Auto,40,Auto,*,Auto">
+                                        <Button Text="−"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.MenosCantidadCommand}"
+                                                CommandParameter="{Binding .}"
+                                                WidthRequest="34" HeightRequest="34"
+                                                CornerRadius="17" Padding="0"
+                                                FontSize="16" FontAttributes="Bold"
+                                                TextColor="{StaticResource Primary}"
+                                                BackgroundColor="{StaticResource CardBackground}"
+                                                BorderWidth="1"
+                                                BorderColor="{StaticResource BorderColor}" />
+                                        <Label Grid.Column="1"
+                                               Text="{Binding Cantidad}"
+                                               FontSize="15"
+                                               FontAttributes="Bold"
+                                               TextColor="{StaticResource TextPrimary}"
+                                               HorizontalTextAlignment="Center"
+                                               VerticalOptions="Center" />
+                                        <Button Grid.Column="2"
+                                                Text="+"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.MasCantidadCommand}"
+                                                CommandParameter="{Binding .}"
+                                                WidthRequest="34" HeightRequest="34"
+                                                CornerRadius="17" Padding="0"
+                                                FontSize="16" FontAttributes="Bold"
+                                                TextColor="{StaticResource Primary}"
+                                                BackgroundColor="{StaticResource CardBackground}"
+                                                BorderWidth="1"
+                                                BorderColor="{StaticResource BorderColor}" />
+                                        <Button Grid.Column="4"
+                                                Text="Eliminar"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EliminarItemCommand}"
+                                                CommandParameter="{Binding .}"
+                                                FontSize="13"
+                                                Padding="8,4"
+                                                TextColor="{StaticResource Danger}"
+                                                BackgroundColor="Transparent"
+                                                BorderWidth="0"
+                                                VerticalOptions="Center" />
+                                    </Grid>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Total -->
+                <Frame Style="{StaticResource CardStyle}" Padding="16"
+                       BackgroundColor="{StaticResource PrimaryLight}">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0"
+                               Text="Total"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="{Binding Total, StringFormat='${0:N2}'}"
+                               FontSize="22"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource Success}"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Frame>
+
+                <!-- Boton registrar -->
+                <Button Text="Registrar Factura"
+                        Command="{Binding RegistrarFacturaCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
+                        Margin="0,0,0,20" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <controls:CargandoOverlay EstaCargando="{Binding IsBusy}" />
+
+    </Grid>
 
 </ContentPage>

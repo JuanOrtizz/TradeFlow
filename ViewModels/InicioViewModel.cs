@@ -1,29 +1,29 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using TradeFlow.Data.Repositories;
 using TradeFlow.Models;
 using TradeFlow.Services;
+using TradeFlow.Views;
 
 namespace TradeFlow.ViewModels
 {
-    public class InicioViewModel
+    public class InicioViewModel : INotifyPropertyChanged
     {
-        //Servicios y repositorios
         private readonly IFacturaRepository _facturaRepository;
+        private readonly IClienteRepository _clienteRepository;
         private readonly IDisplayAlertService _displayAlertService;
 
-        // Propiedades privadas
         private ObservableCollection<FacturaModel> _listaFacturas = new ObservableCollection<FacturaModel>();
         private bool _isBusy;
 
-        // Propiedades públicas
         public ObservableCollection<FacturaModel> ListaFacturas
         {
             get => _listaFacturas;
             set
             {
-                if(_listaFacturas != value)
+                if (_listaFacturas != value)
                 {
                     _listaFacturas = value;
                     OnPropertyChanged(nameof(ListaFacturas));
@@ -36,7 +36,7 @@ namespace TradeFlow.ViewModels
             get => _isBusy;
             set
             {
-                if(_isBusy != value)
+                if (_isBusy != value)
                 {
                     _isBusy = value;
                     OnPropertyChanged(nameof(IsBusy));
@@ -44,39 +44,47 @@ namespace TradeFlow.ViewModels
             }
         }
 
-        // Constructor
-        public InicioViewModel(IFacturaRepository facturaRepository, IDisplayAlertService displayAlertService)
+        public ICommand VerDetalleCommand { get; }
+
+        public InicioViewModel(IFacturaRepository facturaRepository, IClienteRepository clienteRepository, IDisplayAlertService displayAlertService)
         {
             _facturaRepository = facturaRepository;
+            _clienteRepository = clienteRepository;
             _displayAlertService = displayAlertService;
+
+            VerDetalleCommand = new Command<FacturaModel>(async (factura) =>
+            {
+                if (factura != null)
+                {
+                    await Shell.Current.GoToAsync($"{nameof(DetalleFacturaView)}?facturaId={factura.Id}");
+                }
+            });
         }
 
         public async Task InicializarAsync()
         {
             try
             {
-                // Muestro spinner de carga
                 IsBusy = true;
                 _listaFacturas.Clear();
-                // Obtengo todas las facturas
+
                 var facturas = await _facturaRepository.ObtenerUltimasDiezAsync();
                 foreach (var factura in facturas)
                 {
+                    factura.Cliente = await _clienteRepository.ObtenerPorIdAsync(factura.ClienteId);
                     _listaFacturas.Add(factura);
                 }
             }
             catch (Exception)
             {
-                await _displayAlertService.MostrarAlertAsync("Error", "No se pudo inicializar el menú principal", "OK");
+                await _displayAlertService.MostrarAlertAsync("Error", "No se pudo inicializar el menu principal", "OK");
             }
             finally
             {
-                // Oculto spinner de carga
                 IsBusy = false;
             }
         }
 
-        // Implementacion de INotifyPropertyChanged
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
