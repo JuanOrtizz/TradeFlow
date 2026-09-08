@@ -78,8 +78,7 @@ namespace TradeFlow.Services
                 var descuento = item.DescuentoPorcentaje > 0 ? $"{item.DescuentoPorcentaje}%" : "—";
                 html.Append("<tr>");
                 html.Append($"<td>{item.Cantidad}</td>");
-                html.Append("</td>");
-                html.Append($"<td>{Escapar(item.ProductoNombre)}");
+                html.Append($"<td>{Escapar(item.ProductoNombre)}</td>");
                 html.Append($"<td class=\"der\">${item.PrecioUnitario:N2}</td>");
                 html.Append($"<td class=\"der\">{descuento}</td>");
                 html.Append($"<td class=\"der\">${item.Subtotal:N2}</td>");
@@ -168,14 +167,13 @@ namespace TradeFlow.Services
 
             html.Append("""
                 <table>
-                <thead><tr><th style="width:130px">C&oacute;digo</th><th>Producto</th><th class="der" style="width:120px">Precio</th></tr></thead>
+                <thead><tr><th>Producto</th><th class="der" style="width:120px">Precio</th></tr></thead>
                 <tbody>
                 """);
 
             foreach (var producto in productos)
             {
                 html.Append("<tr>");
-                html.Append($"<td class=\"codigo\">{Escapar(producto.Codigo)}</td>");
                 html.Append($"<td>{Escapar(producto.Nombre)}</td>");
                 html.Append($"<td class=\"der\">${producto.Precio:N2}</td>");
                 html.Append("</tr>");

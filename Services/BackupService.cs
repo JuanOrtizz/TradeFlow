@@ -20,10 +20,18 @@ namespace TradeFlow.Services
 
             var backupFileName = GenerarNombreBackup();
             var carpetaBackups = ObtenerCarpetaBackups();
+            var rutaDestino = Path.Combine(carpetaBackups, backupFileName);
 
-            File.Copy(_databaseService.DbPath, Path.Combine(carpetaBackups, backupFileName), true);
+            await _databaseService.CerrarConexionAsync();
+            try
+            {
+                File.Copy(_databaseService.DbPath, rutaDestino, true);
+            }
+            finally
+            {
+                await _databaseService.InitializeAsync();
+            }
 
-            await Task.CompletedTask;
             return backupFileName;
         }
 

@@ -14,17 +14,12 @@ namespace TradeFlow.Data.Repositories
 
         public async Task<int> EliminarAsync(FacturaModel factura)
         {
-            await _db.ExecuteAsync("DELETE FROM DetalleFacturaModel WHERE FacturaId = ?", factura.Id);
-
-            var result = await _db.DeleteAsync(factura);
-            if (result > 0)
+            await _db.RunInTransactionAsync(tran =>
             {
-                return result;
-            }
-            else
-            {
-                throw new Exception("Error al eliminar la factura.");
-            }
+                tran.Execute("DELETE FROM DetalleFacturaModel WHERE FacturaId = ?", factura.Id);
+                tran.Delete(factura);
+            });
+            return 1;
         }
 
         public async Task<int> GuardarAsync(FacturaModel factura)
@@ -94,20 +89,17 @@ namespace TradeFlow.Data.Repositories
                 Total = items.Sum(i => i.Subtotal)
             };
 
-            var result = await _db.InsertAsync(factura);
-            if (result > 0)
+            await _db.RunInTransactionAsync(tran =>
             {
+                tran.Insert(factura);
                 foreach (var item in items)
                 {
                     item.FacturaId = factura.Id;
-                    await _db.InsertAsync(item);
+                    tran.Insert(item);
                 }
-                return factura;
-            }
-            else
-            {
-                throw new Exception("Error al registrar la factura.");
-            }
+            });
+
+            return factura;
         }
 
         public async Task<IReadOnlyList<FacturaModel>> ObtenerUltimasDiezAsync()
