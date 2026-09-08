@@ -136,7 +136,6 @@ namespace TradeFlow.ViewModels
 
                 _indiceLocalidad = -1;
                 IndiceLocalidad = 0;
-                await BuscarAsync();
             }
             catch (Exception)
             {

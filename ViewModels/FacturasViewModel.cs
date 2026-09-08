@@ -58,6 +58,7 @@ namespace TradeFlow.ViewModels
                 {
                     _textoBusqueda = nuevoValor;
                     OnPropertyChanged(nameof(TextoBusqueda));
+                    _ = BuscarAsync();
                 }
             }
         }
@@ -153,14 +154,16 @@ namespace TradeFlow.ViewModels
                         : await _facturaRepository.BuscarPorNumeroAsync(termino);
                 }
 
+                if (idBusqueda != _idBusquedaActual) return;
+
+                var clientes = await _clienteRepository.ObtenerPorIdsAsync(facturas.Select(f => f.ClienteId));
+                var clientesDict = clientes.ToDictionary(c => c.Id);
+
                 foreach (var factura in facturas)
                 {
-                    factura.Cliente = factura.ClienteId > 0
-                        ? await _clienteRepository.ObtenerPorIdAsync(factura.ClienteId)
-                        : null;
+                    clientesDict.TryGetValue(factura.ClienteId, out var cliente);
+                    factura.Cliente = cliente;
                 }
-
-                if (idBusqueda != _idBusquedaActual) return;
 
                 ListaFacturas.Clear();
                 foreach (var factura in facturas)

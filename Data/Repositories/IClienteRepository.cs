@@ -6,6 +6,7 @@ namespace TradeFlow.Data.Repositories
     {
         Task<IReadOnlyList<ClienteModel>> ObtenerTodosAsync();
         Task<ClienteModel?> ObtenerPorIdAsync(int id);
+        Task<IReadOnlyList<ClienteModel>> ObtenerPorIdsAsync(IEnumerable<int> ids);
         Task<int> GuardarAsync(ClienteModel cliente);
         Task<int> EliminarAsync(ClienteModel cliente);
         Task<bool> ExisteNombreAsync(string nombre, int idExcluido = 0);

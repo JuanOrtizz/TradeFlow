@@ -69,9 +69,13 @@ namespace TradeFlow.ViewModels
                 _listaFacturas.Clear();
 
                 var facturas = await _facturaRepository.ObtenerUltimasDiezAsync();
+                var clientes = await _clienteRepository.ObtenerPorIdsAsync(facturas.Select(f => f.ClienteId));
+                var clientesDict = clientes.ToDictionary(c => c.Id);
+
                 foreach (var factura in facturas)
                 {
-                    factura.Cliente = await _clienteRepository.ObtenerPorIdAsync(factura.ClienteId);
+                    clientesDict.TryGetValue(factura.ClienteId, out var cliente);
+                    factura.Cliente = cliente;
                     _listaFacturas.Add(factura);
                 }
             }

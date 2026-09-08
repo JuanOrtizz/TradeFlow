@@ -63,6 +63,16 @@ namespace TradeFlow.Data.Repositories
             return await _db.Table<ClienteModel>().Where(c => c.Id == id).FirstOrDefaultAsync();
         }
 
+        public async Task<IReadOnlyList<ClienteModel>> ObtenerPorIdsAsync(IEnumerable<int> ids)
+        {
+            var listaIds = ids.Distinct().ToList();
+            if (listaIds.Count == 0) return new List<ClienteModel>();
+
+            return await _db.Table<ClienteModel>()
+                .Where(c => listaIds.Contains(c.Id))
+                .ToListAsync();
+        }
+
         public async Task<IReadOnlyList<ClienteModel>> ObtenerPorLocalidadAsync(int localidadId)
         {
             return await _db.Table<ClienteModel>().Where(c => c.LocalidadId == localidadId).ToListAsync();
