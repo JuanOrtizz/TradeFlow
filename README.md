@@ -9,7 +9,7 @@ Construida con **.NET MAUI** sobre la arquitectura **MVVM** + **Repository Patte
 ## Características
 
 ### Facturación
-- Creación de facturas (remitos) seleccionando cliente y productos.
+- Creación de facturas (remitos) seleccionando cliente y productos activos.
 - Búsqueda de cliente y producto con sugerencias en tiempo real (typeahead).
 - Cantidad configurable por producto y **descuento por línea de 0 a 10%** (lista desplegable: "Sin Descuento" o de 1% a 10%).
 - Cálculo automático de subtotal por ítem y total de la factura.
@@ -19,9 +19,11 @@ Construida con **.NET MAUI** sobre la arquitectura **MVVM** + **Repository Patte
 - Eliminación de facturas con borrado en cascada de sus ítems.
 
 ### Productos
-- CRUD completo de productos (código, nombre, precio).
-- Búsqueda en tiempo real por nombre o código.
+- CRUD completo de productos (código, nombre, precio) con estado **activo/inactivo**.
+- Búsqueda en tiempo real por nombre o código (con debounce).
+- Contador de productos registrados en la pantalla de listado.
 - **Exportar catálogo a PDF** (todos los productos) generado directamente con QuestPDF — tabla Código / Producto / Precio.
+- Al facturar solo se ofrecen **productos activos**.
 
 ### Clientes
 - CRUD completo de clientes (nombre, teléfono, dirección, localidad).
@@ -102,8 +104,9 @@ TradeFlow/
 │       ├── ILocalidadRepository.cs / LocalidadRepository.cs
 │       └── IProductoRepository.cs / ProductoRepository.cs
 ├── Helpers/
+│   ├── AppPaths.cs                        # Rutas de datos por PC (Windows / resto)
 │   ├── EjecutarComandoAlDesenfocarBehavior.cs
-│   ├── HandCursor.cs              # Cursor de mano (Windows)
+│   ├── HandCursor.cs                      # Cursor de mano (Windows)
 │   └── LimpiaErrorAlEnfocarBehavior.cs
 ├── Models/
 │   ├── ClienteModel.cs
@@ -136,6 +139,7 @@ TradeFlow/
 | `Codigo` | `string` | Máx. 50, opcional |
 | `Nombre` | `string` | Máx. 100, requerido |
 | `Precio` | `decimal` | Requerido |
+| `Activo` | `bool` | Por defecto `true`; solo los activos se ofrecen al facturar |
 
 ### Cliente
 | Propiedad | Tipo | Notas |
@@ -206,10 +210,10 @@ TradeFlow/
 
 ## Base de Datos
 
-- **Archivo**: `tradeflow.db3` en `FileSystem.AppDataDirectory`.
+- **Archivo**: `tradeflow.db3` en la carpeta de datos (`Helpers/AppPaths.cs`): `%LOCALAPPDATA%\TradeFlow` en Windows, `FileSystem.AppDataDirectory` en el resto de las plataformas. Allí también viven los respaldos y los PDFs generados.
 - **ORM**: `sqlite-net-pcl` (API asíncrona `SQLiteAsyncConnection`).
 - **Creación de tablas** (orden de dependencias): `Localidad` → `Cliente` → `Producto` → `Factura` → `DetalleFactura`.
-- Las tablas se crean antes de la primera pantalla para evitar condiciones de carrera con datos vacíos.
+- La inicialización de tablas ocurre de forma **asíncrona en `App.OnStart`**, sin bloquear el arranque del hilo de UI, protegida con un `SemaphoreSlim` para evitar condiciones de carrera.
 
 ---
 
@@ -227,7 +231,7 @@ TradeFlow/
    ```
    O abrir la solución `TradeFlow.sln` en Visual Studio 2022 y ejecutar en el dispositivo deseado.
 
-> Nota: la **impresión** (WebView2) solo está disponible en **Windows**. La **exportación de catálogo a PDF** (QuestPDF) es multiplataforma.
+> Nota: la **impresión** (WebView2) solo está disponible en **Windows**. La **exportación de catálogo a PDF** (QuestPDF) es multiplataforma. Además, el binario de **Windows es portable (unpackaged/self-contained)**, sin dependencia de MSIX: se puede copiar y ejecutar desde una PC o pendrive.
 
 ---
 
