@@ -350,7 +350,7 @@ namespace TradeFlow.ViewModels
                 Cliente.Nombre = Nombre;
                 Cliente.Telefono = Telefono;
                 Cliente.Direccion = Direccion;
-                Cliente.LocalidadId = LocalidadSeleccionada.Id;
+                Cliente.LocalidadId = LocalidadSeleccionada!.Id;
 
                 await _clienteRepository.GuardarAsync(Cliente);
 

@@ -64,13 +64,10 @@ namespace TradeFlow.ViewModels
             try
             {
                 IsBusy = true;
-                _listaLocalidades.Clear();
 
                 var localidades = await _localidadRepository.ObtenerTodasAsync();
-                foreach (var localidad in localidades)
-                {
-                    _listaLocalidades.Add(localidad);
-                }
+                _listaLocalidades = new ObservableCollection<LocalidadModel>(localidades);
+                OnPropertyChanged(nameof(ListaLocalidades));
             }
             catch (Exception)
             {

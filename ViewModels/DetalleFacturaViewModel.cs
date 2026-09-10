@@ -129,11 +129,7 @@ namespace TradeFlow.ViewModels
                     factura.Cliente = await _clienteRepository.ObtenerPorIdAsync(factura.ClienteId);
 
                     var detalles = await _facturaRepository.ObtenerDetallesAsync(FacturaId);
-                    Items.Clear();
-                    foreach (var item in detalles)
-                    {
-                        Items.Add(item);
-                    }
+                    Items = new ObservableCollection<DetalleFacturaModel>(detalles);
 
                     Factura = factura;
                 }

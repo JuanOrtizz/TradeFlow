@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Windows.Input;
 using TradeFlow.Data.Repositories;
 using TradeFlow.Models;
@@ -22,6 +23,7 @@ namespace TradeFlow.ViewModels
         private int _indiceLocalidad;
         private int _localidadIdSeleccionada;
         private int _idBusquedaActual;
+        private CancellationTokenSource? _searchCts;
 
         public ObservableCollection<ClienteModel> ListaClientes
         {
@@ -102,7 +104,10 @@ namespace TradeFlow.ViewModels
                 {
                     _textoBusqueda = nuevoValor;
                     OnPropertyChanged(nameof(TextoBusqueda));
-                    _ = BuscarAsync();
+                    _searchCts?.Cancel();
+                    _searchCts = new CancellationTokenSource();
+                    var token = _searchCts.Token;
+                    _ = BuscarAsync(token);
                 }
             }
         }
@@ -127,12 +132,10 @@ namespace TradeFlow.ViewModels
 
                 var localidades = await _localidadRepository.ObtenerTodasAsync();
 
-                _listaLocalidades.Clear();
-                _listaLocalidades.Add(new LocalidadModel { Id = 0, Nombre = "Todas" });
-                foreach (var localidad in localidades)
-                {
-                    _listaLocalidades.Add(localidad);
-                }
+                var lista = new List<LocalidadModel> { new LocalidadModel { Id = 0, Nombre = "Todas" } };
+                lista.AddRange(localidades);
+                _listaLocalidades = new ObservableCollection<LocalidadModel>(lista);
+                OnPropertyChanged(nameof(ListaLocalidades));
 
                 _indiceLocalidad = -1;
                 IndiceLocalidad = 0;
@@ -147,13 +150,16 @@ namespace TradeFlow.ViewModels
             }
         }
 
-        public async Task BuscarAsync()
+        public async Task BuscarAsync(CancellationToken ct = default)
         {
             var idBusqueda = ++_idBusquedaActual;
 
             try
             {
                 IsBusy = true;
+
+                await Task.Delay(300);
+                if (ct.IsCancellationRequested || idBusqueda != _idBusquedaActual) return;
 
                 var clientes = string.IsNullOrWhiteSpace(TextoBusqueda)
                     ? await _clienteRepository.ObtenerTodosAsync()
@@ -166,11 +172,11 @@ namespace TradeFlow.ViewModels
 
                 if (idBusqueda != _idBusquedaActual) return;
 
-                _listaClientes.Clear();
-                foreach (var cliente in clientes)
-                {
-                    _listaClientes.Add(cliente);
-                }
+                _listaClientes = new ObservableCollection<ClienteModel>(clientes);
+                OnPropertyChanged(nameof(ListaClientes));
+            }
+            catch (OperationCanceledException)
+            {
             }
             catch (Exception)
             {

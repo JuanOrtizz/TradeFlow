@@ -34,11 +34,64 @@ namespace TradeFlow.ViewModels
         private bool _hayErrorEnProducto;
         private string _errorProducto = string.Empty;
 
-        public ObservableCollection<ClienteModel> ListaClientes { get; } = new ObservableCollection<ClienteModel>();
-        public ObservableCollection<ProductoModel> ListaProductos { get; } = new ObservableCollection<ProductoModel>();
+        private ObservableCollection<ClienteModel> _listaClientes = new ObservableCollection<ClienteModel>();
+        private ObservableCollection<ProductoModel> _listaProductos = new ObservableCollection<ProductoModel>();
+        private ObservableCollection<ClienteModel> _sugerenciasClientes = new ObservableCollection<ClienteModel>();
+        private ObservableCollection<ProductoModel> _sugerenciasProductos = new ObservableCollection<ProductoModel>();
+
+        public ObservableCollection<ClienteModel> ListaClientes
+        {
+            get => _listaClientes;
+            set
+            {
+                if (_listaClientes != value)
+                {
+                    _listaClientes = value;
+                    OnPropertyChanged(nameof(ListaClientes));
+                }
+            }
+        }
+
+        public ObservableCollection<ProductoModel> ListaProductos
+        {
+            get => _listaProductos;
+            set
+            {
+                if (_listaProductos != value)
+                {
+                    _listaProductos = value;
+                    OnPropertyChanged(nameof(ListaProductos));
+                }
+            }
+        }
+
+        public ObservableCollection<ClienteModel> SugerenciasClientes
+        {
+            get => _sugerenciasClientes;
+            set
+            {
+                if (_sugerenciasClientes != value)
+                {
+                    _sugerenciasClientes = value;
+                    OnPropertyChanged(nameof(SugerenciasClientes));
+                }
+            }
+        }
+
+        public ObservableCollection<ProductoModel> SugerenciasProductos
+        {
+            get => _sugerenciasProductos;
+            set
+            {
+                if (_sugerenciasProductos != value)
+                {
+                    _sugerenciasProductos = value;
+                    OnPropertyChanged(nameof(SugerenciasProductos));
+                }
+            }
+        }
+
         public ObservableCollection<DetalleFacturaModel> ItemsFactura { get; } = new ObservableCollection<DetalleFacturaModel>();
-        public ObservableCollection<ClienteModel> SugerenciasClientes { get; } = new ObservableCollection<ClienteModel>();
-        public ObservableCollection<ProductoModel> SugerenciasProductos { get; } = new ObservableCollection<ProductoModel>();
 
         public IReadOnlyList<string> OpcionesDescuento { get; } =
             new List<string> { "Sin Descuento" }
@@ -275,28 +328,29 @@ namespace TradeFlow.ViewModels
         {
             var texto = _textoBuscarCliente.Trim();
 
-            SugerenciasClientes.Clear();
             if (texto.Length == 0)
             {
+                SugerenciasClientes = new ObservableCollection<ClienteModel>();
                 HaySugerenciasClientes = false;
                 return;
             }
 
             var coincidencias = ListaClientes
                 .Where(c => c.Nombre.IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0)
-                .Take(8);
+                .Take(8)
+                .ToList();
 
-            foreach (var c in coincidencias) SugerenciasClientes.Add(c);
-            HaySugerenciasClientes = SugerenciasClientes.Count > 0;
+            SugerenciasClientes = new ObservableCollection<ClienteModel>(coincidencias);
+            HaySugerenciasClientes = coincidencias.Count > 0;
         }
 
         private void BuscarProductos()
         {
             var texto = _textoBuscarProducto.Trim();
 
-            SugerenciasProductos.Clear();
             if (texto.Length == 0)
             {
+                SugerenciasProductos = new ObservableCollection<ProductoModel>();
                 HaySugerenciasProductos = false;
                 return;
             }
@@ -304,10 +358,11 @@ namespace TradeFlow.ViewModels
             var coincidencias = ListaProductos
                 .Where(p => p.Nombre.IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0
                          || (p.Codigo ?? string.Empty).IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0)
-                .Take(8);
+                .Take(8)
+                .ToList();
 
-            foreach (var p in coincidencias) SugerenciasProductos.Add(p);
-            HaySugerenciasProductos = SugerenciasProductos.Count > 0;
+            SugerenciasProductos = new ObservableCollection<ProductoModel>(coincidencias);
+            HaySugerenciasProductos = coincidencias.Count > 0;
         }
 
         public async Task OcultarSugerenciasClienteAsync()
@@ -370,13 +425,10 @@ namespace TradeFlow.ViewModels
             {
                 IsBusy = true;
 
-                ListaClientes.Clear();
-                var clientes = await _clienteRepository.ObtenerTodosAsync();
-                foreach (var c in clientes) ListaClientes.Add(c);
+                ListaClientes = new ObservableCollection<ClienteModel>(await _clienteRepository.ObtenerTodosAsync());
 
-                ListaProductos.Clear();
-                var productos = await _productoRepository.ObtenerTodosAsync();
-                foreach (var p in productos) ListaProductos.Add(p);
+                var productos = (await _productoRepository.ObtenerTodosAsync()).Where(p => p.Activo).ToList();
+                ListaProductos = new ObservableCollection<ProductoModel>(productos);
 
                 ItemsFactura.Clear();
             }
@@ -457,11 +509,12 @@ namespace TradeFlow.ViewModels
             OnPropertyChanged(nameof(Total));
         }
 
-        public async Task EliminarItemAsync(DetalleFacturaModel item)
+        public Task EliminarItemAsync(DetalleFacturaModel item)
         {
-            if (item == null) return;
+            if (item == null) return Task.CompletedTask;
             ItemsFactura.Remove(item);
             OnPropertyChanged(nameof(Total));
+            return Task.CompletedTask;
         }
 
         public async Task RegistrarFacturaAsync()

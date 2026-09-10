@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Windows.Input;
 using TradeFlow.Data.Repositories;
 using TradeFlow.Models;
@@ -21,6 +22,7 @@ namespace TradeFlow.ViewModels
         private bool _filtraPorFecha;
         private DateTime _fechaSeleccionada = DateTime.Today;
         private int _idBusquedaActual;
+        private CancellationTokenSource? _searchCts;
 
         public ObservableCollection<FacturaModel> ListaFacturas
         {
@@ -58,7 +60,10 @@ namespace TradeFlow.ViewModels
                 {
                     _textoBusqueda = nuevoValor;
                     OnPropertyChanged(nameof(TextoBusqueda));
-                    _ = BuscarAsync();
+                    _searchCts?.Cancel();
+                    _searchCts = new CancellationTokenSource();
+                    var token = _searchCts.Token;
+                    _ = BuscarAsync(token);
                 }
             }
         }
@@ -126,13 +131,16 @@ namespace TradeFlow.ViewModels
             await BuscarAsync();
         }
 
-        public async Task BuscarAsync()
+        public async Task BuscarAsync(CancellationToken ct = default)
         {
             var idBusqueda = ++_idBusquedaActual;
 
             try
             {
                 IsBusy = true;
+
+                await Task.Delay(300);
+                if (ct.IsCancellationRequested || idBusqueda != _idBusquedaActual) return;
 
                 IReadOnlyList<FacturaModel> facturas;
 
@@ -165,11 +173,11 @@ namespace TradeFlow.ViewModels
                     factura.Cliente = cliente;
                 }
 
-                ListaFacturas.Clear();
-                foreach (var factura in facturas)
-                {
-                    ListaFacturas.Add(factura);
-                }
+                _listaFacturas = new ObservableCollection<FacturaModel>(facturas);
+                OnPropertyChanged(nameof(ListaFacturas));
+            }
+            catch (OperationCanceledException)
+            {
             }
             catch (Exception)
             {

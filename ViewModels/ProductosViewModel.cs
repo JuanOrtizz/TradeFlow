@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Windows.Input;
 using TradeFlow.Data.Repositories;
 using TradeFlow.Models;
@@ -19,6 +20,7 @@ namespace TradeFlow.ViewModels
         private bool _isBusy;
         private string _textoBusqueda = string.Empty;
         private int _idBusquedaActual;
+        private CancellationTokenSource? _searchCts;
 
         public ObservableCollection<ProductoModel> ListaProductos
         {
@@ -29,9 +31,12 @@ namespace TradeFlow.ViewModels
                 {
                     _listaProductos = value;
                     OnPropertyChanged(nameof(ListaProductos));
+                    OnPropertyChanged(nameof(TotalProductos));
                 }
             }
         }
+
+        public int TotalProductos => ListaProductos.Count;
 
         public bool IsBusy
         {
@@ -56,7 +61,10 @@ namespace TradeFlow.ViewModels
                 {
                     _textoBusqueda = nuevoValor;
                     OnPropertyChanged(nameof(TextoBusqueda));
-                    _ = BuscarAsync();
+                    _searchCts?.Cancel();
+                    _searchCts = new CancellationTokenSource();
+                    var token = _searchCts.Token;
+                    _ = BuscarAsync(token);
                 }
             }
         }
@@ -79,10 +87,10 @@ namespace TradeFlow.ViewModels
 
         public async Task InicializarAsync()
         {
-            await BuscarAsync();
+            await BuscarAsync(CancellationToken.None);
         }
 
-        public async Task BuscarAsync()
+        public async Task BuscarAsync(CancellationToken ct = default)
         {
             var idBusqueda = ++_idBusquedaActual;
 
@@ -90,17 +98,21 @@ namespace TradeFlow.ViewModels
             {
                 IsBusy = true;
 
+                await Task.Delay(300);
+                if (ct.IsCancellationRequested || idBusqueda != _idBusquedaActual) return;
+
                 var productos = string.IsNullOrWhiteSpace(TextoBusqueda)
                     ? await _productoRepository.ObtenerTodosAsync()
                     : await _productoRepository.BuscarAsync(TextoBusqueda.Trim());
 
                 if (idBusqueda != _idBusquedaActual) return;
 
-                _listaProductos.Clear();
-                foreach (var producto in productos)
-                {
-                    _listaProductos.Add(producto);
-                }
+                _listaProductos = new ObservableCollection<ProductoModel>(productos);
+                OnPropertyChanged(nameof(ListaProductos));
+                OnPropertyChanged(nameof(TotalProductos));
+            }
+            catch (OperationCanceledException)
+            {
             }
             catch (Exception)
             {
@@ -127,6 +139,7 @@ namespace TradeFlow.ViewModels
                 {
                     await _productoRepository.EliminarAsync(producto);
                     _listaProductos.Remove(producto);
+                    OnPropertyChanged(nameof(TotalProductos));
                 }
             }
             catch (Exception)

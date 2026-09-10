@@ -66,7 +66,6 @@ namespace TradeFlow.ViewModels
             try
             {
                 IsBusy = true;
-                _listaFacturas.Clear();
 
                 var facturas = await _facturaRepository.ObtenerUltimasDiezAsync();
                 var clientes = await _clienteRepository.ObtenerPorIdsAsync(facturas.Select(f => f.ClienteId));
@@ -76,8 +75,9 @@ namespace TradeFlow.ViewModels
                 {
                     clientesDict.TryGetValue(factura.ClienteId, out var cliente);
                     factura.Cliente = cliente;
-                    _listaFacturas.Add(factura);
                 }
+                _listaFacturas = new ObservableCollection<FacturaModel>(facturas);
+                OnPropertyChanged(nameof(ListaFacturas));
             }
             catch (Exception)
             {

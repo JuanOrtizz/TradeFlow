@@ -113,12 +113,11 @@ namespace TradeFlow.ViewModels
                 if (Cliente != null)
                 {
                     var facturas = await _facturaRepository.ObtenerPorClienteAsync(ClienteId);
-                    ListaFacturasCliente.Clear();
                     foreach (var factura in facturas)
                     {
                         factura.Cliente = Cliente;
-                        ListaFacturasCliente.Add(factura);
                     }
+                    ListaFacturasCliente = new ObservableCollection<FacturaModel>(facturas);
                 }
             }
             catch (Exception)

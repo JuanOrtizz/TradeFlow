@@ -294,7 +294,7 @@ namespace TradeFlow.ViewModels
                     return;
                 }
 
-                var cliente = await _clienteRepository.RegistrarAsync(Nombre, Telefono, Direccion, LocalidadSeleccionada);
+                var cliente = await _clienteRepository.RegistrarAsync(Nombre, Telefono, Direccion, LocalidadSeleccionada!);
 
                 await _displayAlertService.MostrarAlertAsync("Éxito", "Cliente registrado correctamente", "OK");
 
