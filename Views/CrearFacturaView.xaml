@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TradeFlow.ViewModels"
+             xmlns:models="clr-namespace:TradeFlow.Models"
              x:Class="TradeFlow.Views.CrearFacturaView"
              Title="Crear Factura"
              xmlns:helpers="clr-namespace:TradeFlow.Helpers"
              xmlns:controls="clr-namespace:TradeFlow.Controls"
+             x:DataType="vm:CrearFacturaViewModel"
              BackgroundColor="{StaticResource Background}">
 
     <Grid RowDefinitions="*">
@@ -89,6 +92,7 @@
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Padding="12,10" ColumnDefinitions="*,Auto"
+                                              x:DataType="models:ClienteModel"
                                               helpers:HandCursor.IsEnabled="True">
                                             <Grid.GestureRecognizers>
                                                 <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SeleccionarClienteCommand}"
@@ -189,6 +193,7 @@
                                     <CollectionView.ItemTemplate>
                                         <DataTemplate>
                                             <Grid Padding="12,10" ColumnDefinitions="*,Auto"
+                                                  x:DataType="models:ProductoModel"
                                                   helpers:HandCursor.IsEnabled="True">
                                                 <Grid.GestureRecognizers>
                                                     <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SeleccionarProductoCommand}"
@@ -283,7 +288,8 @@
                 <Label Text="Items en la factura"
                        Style="{StaticResource SectionTitleStyle}" />
 
-                <CollectionView ItemsSource="{Binding ItemsFactura}">
+                <CollectionView ItemsSource="{Binding ItemsFactura}"
+                    ItemsUpdatingScrollMode="KeepItemsInView">
                     <CollectionView.EmptyView>
                         <Label Text="No hay items agregados"
                                Style="{StaticResource EmptyStateStyle}" />
@@ -291,10 +297,11 @@
 
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Frame Style="{StaticResource CardStyle}"
+                            <Grid x:DataType="models:DetalleFacturaModel"
                                    Margin="0,0,0,6"
-                                   Padding="14">
-                                <Grid RowDefinitions="Auto,Auto" RowSpacing="10">
+                                   Padding="14"
+                                   BackgroundColor="{StaticResource CardBackground}"
+                                   RowDefinitions="Auto,Auto" RowSpacing="10">
 
                                     <Grid ColumnDefinitions="*,Auto">
                                         <VerticalStackLayout Grid.Column="0" Spacing="2">
@@ -360,7 +367,6 @@
                                                 VerticalOptions="Center" />
                                     </Grid>
                                 </Grid>
-                            </Frame>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>

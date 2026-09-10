@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TradeFlow.ViewModels"
+             xmlns:models="clr-namespace:TradeFlow.Models"
              x:Class="TradeFlow.Views.LocalidadesView"
              xmlns:controls="clr-namespace:TradeFlow.Controls"
+             x:DataType="vm:LocalidadesViewModel"
              Title="Localidades"
              BackgroundColor="{StaticResource Background}">
 
@@ -24,9 +27,10 @@
 
         <!-- Lista de localidades -->
         <CollectionView 
-            Grid.Row="2"
+            Grid.Row="1"
             ItemsSource="{Binding ListaLocalidades}"
             IsVisible="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
+            ItemsUpdatingScrollMode="KeepItemsInView"
             Margin="0,8,0,0"
             >
 
@@ -45,10 +49,11 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate>
 
-                    <Border Style="{StaticResource CardStyle}"
-                               Padding="16">
-
-                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+                    <Grid x:DataType="models:LocalidadModel"
+                               Padding="16"
+                               Margin="0,0,0,8"
+                               BackgroundColor="{StaticResource CardBackground}"
+                               ColumnDefinitions="*,Auto" ColumnSpacing="14">
 
                             <!-- Nombre -->
                             <Label Grid.Column="0"
@@ -70,12 +75,11 @@
 
                             </Button>
                         </Grid>
-                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <controls:CargandoOverlay EstaCargando="{Binding IsBusy}" />
+        <controls:CargandoOverlay Grid.RowSpan="2" EstaCargando="{Binding IsBusy}" />
 
     </Grid>
 

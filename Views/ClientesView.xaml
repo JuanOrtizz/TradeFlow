@@ -2,8 +2,11 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:helpers="clr-namespace:TradeFlow.Helpers"
+             xmlns:vm="clr-namespace:TradeFlow.ViewModels"
+             xmlns:models="clr-namespace:TradeFlow.Models"
              x:Class="TradeFlow.Views.ClientesView"
              xmlns:controls="clr-namespace:TradeFlow.Controls"
+             x:DataType="vm:ClientesViewModel"
              Title="Clientes"
              BackgroundColor="{StaticResource Background}">
 
@@ -14,8 +17,8 @@
         <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="10">
             <Border
                 StrokeShape="4"
-                Stroke="LightGray"
-                StrokeThickness="{StaticResource BorderColor}"
+Stroke="LightGray"
+                StrokeThickness="1"
                 >
 
                 <Border.Triggers>
@@ -84,10 +87,11 @@
 
         <!-- Lista de clientes -->
 
-        <CollectionView 
+<CollectionView 
             Grid.Row="3"
             ItemsSource="{Binding ListaClientes}"
             IsVisible="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
+            ItemsUpdatingScrollMode="KeepItemsInView"
             Margin="0,8,0,0"
             >
 
@@ -102,19 +106,19 @@
                    ItemSpacing="5" />
             </CollectionView.ItemsLayout>
 
-            <CollectionView.ItemTemplate>
+<CollectionView.ItemTemplate>
                 <DataTemplate>
 
-                    <Border Style="{StaticResource CardStyle}"
+<Grid x:DataType="models:ClienteModel"
                        helpers:HandCursor.IsEnabled="True"
                        Margin="20,0,20,8"
-                       Padding="16">
-                        <Border.GestureRecognizers>
+                       Padding="16"
+                       BackgroundColor="{StaticResource CardBackground}"
+                       ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                        <Grid.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.VerDetalleCommand}"
                               CommandParameter="{Binding .}" />
-                        </Border.GestureRecognizers>
-
-                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                        </Grid.GestureRecognizers>
 
                             <!-- Avatar -->
                             <Border Grid.Column="0"
@@ -150,14 +154,13 @@
                                 FontSize="24"
                                 TextColor="{StaticResource TextLight}"
                                 VerticalOptions="Center" />
-                        </Grid>
-                    </Border>
+                    </Grid>
 
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <controls:CargandoOverlay EstaCargando="{Binding IsBusy}" />
+        <controls:CargandoOverlay Grid.RowSpan="4" EstaCargando="{Binding IsBusy}" />
 
     </Grid>
 

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:TradeFlow.Controls"
              x:Class="TradeFlow.Controls.CargandoOverlay"
+             x:DataType="controls:CargandoOverlay"
              x:Name="root">
 
-    <Grid BackgroundColor="{StaticResource OverlayColor}"
+    <Grid BackgroundColor="Transparent"
           IsVisible="{Binding EstaCargando, Source={x:Reference root}}">
         <ActivityIndicator Color="DarkCyan"
                            WidthRequest="60"

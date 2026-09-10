@@ -6,6 +6,7 @@
              Title="Agregar Localidad"
              xmlns:vm="clr-namespace:TradeFlow.ViewModels"
              xmlns:helpers="clr-namespace:TradeFlow.Helpers"
+             x:DataType="vm:AgregarLocalidadViewModel"
              BackgroundColor="{StaticResource Background}">
 
     <Grid RowDefinitions="*">

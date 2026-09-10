@@ -3,8 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:TradeFlow.ViewModels"
              xmlns:helpers="clr-namespace:TradeFlow.Helpers"
+             xmlns:models="clr-namespace:TradeFlow.Models"
              x:Class="TradeFlow.Views.InicioView"
              xmlns:controls="clr-namespace:TradeFlow.Controls"
+             x:DataType="vm:InicioViewModel"
              Title="Inicio"
              Shell.NavBarIsVisible="True">
 
@@ -13,6 +15,7 @@
         <!-- Lista de facturas -->
         <CollectionView ItemsSource="{Binding ListaFacturas}"
                         IsVisible="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
+                        ItemsUpdatingScrollMode="KeepItemsInView"
                         Margin="0">
 
             <CollectionView.ItemsLayout>
@@ -45,20 +48,17 @@
 
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Border BackgroundColor="{StaticResource CardBackground}"
-                            StrokeShape="RoundRectangle 14"
-                            Stroke="{StaticResource BorderColor}"
-                            StrokeThickness="1"
+                    <Grid BackgroundColor="{StaticResource CardBackground}"
+                            x:DataType="models:FacturaModel"
                             Padding="20"
                             Margin="20"
-                            helpers:HandCursor.IsEnabled="True">
+                            helpers:HandCursor.IsEnabled="True"
+                            RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
 
-                        <Border.GestureRecognizers>
+                        <Grid.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.VerDetalleCommand}"
                                                   CommandParameter="{Binding .}" />
-                        </Border.GestureRecognizers>
-
-                        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
+                        </Grid.GestureRecognizers>
 
                             <!-- Fila 0: Factura # + Cliente -->
                             <Label Grid.Row="0" Grid.Column="0"
@@ -96,7 +96,6 @@
                                    VerticalOptions="Center" />
 
                         </Grid>
-                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

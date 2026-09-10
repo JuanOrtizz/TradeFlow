@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TradeFlow.ViewModels"
              x:Class="TradeFlow.Views.EditarClienteView"
              xmlns:controls="clr-namespace:TradeFlow.Controls"
              Title="Editar Cliente"
              xmlns:helpers="clr-namespace:TradeFlow.Helpers"
+             x:DataType="vm:EditarClienteViewModel"
              BackgroundColor="{StaticResource Background}">
 
     <Grid RowDefinitions="*">
