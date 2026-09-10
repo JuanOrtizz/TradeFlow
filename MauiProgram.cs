@@ -37,8 +37,8 @@ namespace TradeFlow
             // Base de datos
             builder.Services.AddSingleton<DatabaseService>(sp =>
             {
-                var dbPath = Path.Combine(FileSystem.AppDataDirectory, "tradeflow.db3");
-                return new DatabaseService(dbPath);
+                Directory.CreateDirectory(TradeFlow.Helpers.AppPaths.DirectorioDatos);
+                return new DatabaseService(TradeFlow.Helpers.AppPaths.ObtenerRuta("tradeflow.db3"));
             });
 
             // Servicios
@@ -90,16 +90,9 @@ namespace TradeFlow
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
-            // Construyo la app e inicio la DB
+
+            // Construyo la app y la retorno directamente sin bloquear el hilo
             var app = builder.Build();
-
-            // Creo las tablas ANTES de mostrar cualquier pagina para que ninguna
-            // consulta le gane a la inicializacion (crasheaba con la DB vacia)
-            var db = app.Services.GetRequiredService<DatabaseService>();
-
-            // Task.Run saca la inicializacion del contexto de UI: las continuaciones de los
-            // await corren en el thread pool y no necesitan el hilo bloqueado (evita deadlock)
-            Task.Run(() => db.InitializeAsync()).GetAwaiter().GetResult();
 
             return app;
         }

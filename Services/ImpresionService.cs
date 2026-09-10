@@ -230,7 +230,7 @@ namespace TradeFlow.Services
                 webView.Navigated -= AlNavegar;
             }
 
-            var rutaArchivo = Path.Combine(FileSystem.AppDataDirectory, nombreArchivo);
+            var rutaArchivo = Path.Combine(TradeFlow.Helpers.AppPaths.DirectorioDatos, nombreArchivo);
             var generado = await core.PrintToPdfAsync(rutaArchivo, null);
 
             if (!generado)
@@ -247,7 +247,7 @@ namespace TradeFlow.Services
 
         public async Task<string> GenerarCatalogoPdfAsync(IReadOnlyList<ProductoModel> productos)
         {
-            var rutaArchivo = Path.Combine(FileSystem.AppDataDirectory, "catalogo_productos.pdf");
+            var rutaArchivo = Path.Combine(TradeFlow.Helpers.AppPaths.DirectorioDatos, "catalogo_productos.pdf");
 
             QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 

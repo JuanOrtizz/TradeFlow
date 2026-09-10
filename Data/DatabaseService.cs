@@ -8,6 +8,7 @@ namespace TradeFlow.Data
         private readonly string _dbPath;
         private SQLiteAsyncConnection _db;
         private bool _initialized;
+        private readonly SemaphoreSlim _initLock = new(1, 1);
 
         public string DbPath => _dbPath;
 
@@ -30,20 +31,25 @@ namespace TradeFlow.Data
 
         public async Task InitializeAsync()
         {
+            if (_initialized) return;
 
-            if (_initialized)
+            await _initLock.WaitAsync();
+            try
             {
-                return;
+                if (_initialized) return;
+
+                await _db.CreateTableAsync<LocalidadModel>();
+                await _db.CreateTableAsync<ClienteModel>();
+                await _db.CreateTableAsync<ProductoModel>();
+                await _db.CreateTableAsync<FacturaModel>();
+                await _db.CreateTableAsync<DetalleFacturaModel>();
+
+                _initialized = true;
             }
-
-            await _db.CreateTableAsync<LocalidadModel>();
-            await _db.CreateTableAsync<ClienteModel>();
-            await _db.CreateTableAsync<ProductoModel>();
-            await _db.CreateTableAsync<FacturaModel>();
-            await _db.CreateTableAsync<DetalleFacturaModel>();
-
-            // Inicializo la variable para no volver a inicializar
-            _initialized = true;
+            finally
+            {
+                _initLock.Release();
+            }
         }
     }
 }

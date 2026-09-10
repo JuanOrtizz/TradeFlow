@@ -79,7 +79,7 @@ namespace TradeFlow.Services
 
         private static string ObtenerCarpetaBackups()
         {
-            var carpetaBackups = Path.Combine(FileSystem.AppDataDirectory, "Backups");
+            var carpetaBackups = Path.Combine(TradeFlow.Helpers.AppPaths.DirectorioDatos, "Backups");
             Directory.CreateDirectory(carpetaBackups);
             return carpetaBackups;
         }
