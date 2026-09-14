@@ -5,6 +5,7 @@ namespace TradeFlow.Data.Repositories
     public interface IProductoRepository
     {
         Task<IReadOnlyList<ProductoModel>> ObtenerTodosAsync();
+        Task<IReadOnlyList<ProductoModel>> ObtenerActivosAsync();
         Task<ProductoModel?> ObtenerPorIdAsync(int id);
         Task<int> GuardarAsync(ProductoModel producto);
         Task<int> EliminarAsync(ProductoModel producto);

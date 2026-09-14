@@ -166,10 +166,10 @@ namespace TradeFlow.ViewModels
             {
                 IsBusy = true;
 
-                var productos = await _productoRepository.ObtenerTodosAsync();
+                var productos = await _productoRepository.ObtenerActivosAsync();
                 if (productos == null || productos.Count == 0)
                 {
-                    await _displayAlertService.MostrarAlertAsync("Aviso", "No hay productos para exportar", "OK");
+                    await _displayAlertService.MostrarAlertAsync("Aviso", "No hay productos activos para exportar", "OK");
                     return;
                 }
 

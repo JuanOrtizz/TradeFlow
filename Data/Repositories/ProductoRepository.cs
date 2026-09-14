@@ -84,6 +84,14 @@ namespace TradeFlow.Data.Repositories
                 .ToList();
         }
 
+        public async Task<IReadOnlyList<ProductoModel>> ObtenerActivosAsync()
+        {
+            var productos = await _db.Table<ProductoModel>()
+                .Where(p => p.Activo)
+                .ToListAsync();
+            return productos.OrderBy(p => p.Nombre).ToList();
+        }
+
         public async Task<ProductoModel> RegistrarAsync(string nombre, string codigo, decimal precio)
         {
             var producto = new ProductoModel
