@@ -22,17 +22,17 @@ namespace TradeFlow
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
-#if WINDOWS
-            builder.ConfigureMauiHandlers(handlers =>
-            {
-                handlers.AddHandler<Microsoft.Maui.Controls.Button, TradeFlow.Platforms.Windows.HandCursorButtonHandler>();
-            });
+            #if WINDOWS
+                builder.ConfigureMauiHandlers(handlers =>
+                {
+                    handlers.AddHandler<Microsoft.Maui.Controls.Button, TradeFlow.Platforms.Windows.HandCursorButtonHandler>();
+                });
 
-            Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping("CustomTitleBar", (handler, view) =>
-            {
-                handler.PlatformView.ExtendsContentIntoTitleBar = false;
-            });
-#endif
+                Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping("CustomTitleBar", (handler, view) =>
+                {
+                    handler.PlatformView.ExtendsContentIntoTitleBar = false;
+                });
+            #endif
 
             // Base de datos
             builder.Services.AddSingleton<DatabaseService>(sp =>
