@@ -25,7 +25,8 @@ namespace TradeFlow.Services
                     .marca { font-size: 13px; font-weight: 700; letter-spacing: .5px; }
                     .marca-sub { font-size: 10px; }
                     .remito { font-weight: 700; }
-                    .datos-cliente { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; line-height: 1.4; margin-bottom: 12px; }
+                    .datos-cliente { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; font-size: 11px; line-height: 1.4; margin-bottom: 12px; }
+                    .cliente-nombre { font-size: 16px; font-weight: 700; }
                     h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; margin: 0 0 6px; font-weight: bold; }
                     table { width: 100%; border-collapse: collapse; font-size: 12px; }
                     th { background: transparent; color: #000000; text-align: left; padding: 2px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #000000; }
@@ -36,7 +37,7 @@ namespace TradeFlow.Services
                     .totales table { width: 280px; }
                     .totales td { border-bottom: none; }
                     .fila-total td { font-weight: 700; font-size: 16px; border-top: 2px solid #000000; color: #000000; padding-top: 8px; }
-                    .pie { margin-top: 40px; border-top: 1px solid #000000; padding-top: 12px; font-size: 11px; color: #000000; text-align: center; }
+                    .pie { margin-top: 10px; border-top: 1px solid #000000; padding-top: 8px; font-size: 11px; color: #000000; text-align: center; }
                     @media print { 
                         @page { size: A4; margin: 15mm; }
                         body { padding: 0; } 
@@ -54,8 +55,6 @@ namespace TradeFlow.Services
             html.Append("</div>");
 
             var partesCliente = new List<string>();
-            if (!string.IsNullOrWhiteSpace(factura.Cliente?.Nombre))
-                partesCliente.Add(Escapar(factura.Cliente.Nombre));
             if (!string.IsNullOrWhiteSpace(factura.Cliente?.Localidad?.Nombre))
                 partesCliente.Add($"Localidad: {Escapar(factura.Cliente.Localidad.Nombre)}");
             if (!string.IsNullOrWhiteSpace(factura.Cliente?.Direccion))
@@ -64,7 +63,10 @@ namespace TradeFlow.Services
                 partesCliente.Add($"Tel: {Escapar(factura.Cliente.Telefono)}");
 
             html.Append("<div class=\"datos-cliente\">");
-            html.Append($"<div><b>Cliente:</b> {string.Join(" | ", partesCliente)}</div>");
+            if (!string.IsNullOrWhiteSpace(factura.Cliente?.Nombre))
+                html.Append($"<div><span class=\"cliente-nombre\">{Escapar(factura.Cliente.Nombre)}</span></div>");
+            if (partesCliente.Count > 0)
+                html.Append($"<div>{string.Join(" | ", partesCliente)}</div>");
             html.Append("</div>");
 
             html.Append("""
