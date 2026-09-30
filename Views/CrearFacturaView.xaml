@@ -285,8 +285,15 @@
                 </Frame>
 
                 <!-- Items agregados -->
-                <Label Text="Items en la factura"
-                       Style="{StaticResource SectionTitleStyle}" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Grid.Column="0"
+                           Text="Items en la factura"
+                           Style="{StaticResource SectionTitleStyle}" />
+                    <Label Grid.Column="1"
+                           Text="{Binding ContadorItems}"
+                           Style="{StaticResource SubtitleStyle}"
+                           VerticalTextAlignment="End" />
+                </Grid>
 
                 <CollectionView ItemsSource="{Binding ItemsFactura}"
                     ItemsUpdatingScrollMode="KeepItemsInView">
@@ -297,76 +304,82 @@
 
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Grid x:DataType="models:DetalleFacturaModel"
-                                   Margin="0,0,0,6"
-                                   Padding="14"
-                                   BackgroundColor="{StaticResource CardBackground}"
-                                   RowDefinitions="Auto,Auto" RowSpacing="10">
+                            <!-- El Margin del CollectionView se ignora si el elemento con
+                                 margen es la raiz del template, asi que la separacion va
+                                 en un Grid transparente raiz y la card lleva el margen. -->
+                            <Grid>
+                                <Frame Style="{StaticResource CardStyle}"
+                                       Padding="16"
+                                       Margin="0,0,0,12">
+                                    <Grid x:DataType="models:DetalleFacturaModel"
+                                           RowDefinitions="Auto,Auto" RowSpacing="10">
 
-                                    <Grid ColumnDefinitions="*,Auto">
-                                        <VerticalStackLayout Grid.Column="0" Spacing="2">
-                                            <Label Text="{Binding ProductoNombre}"
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                                <Label Text="{Binding ProductoNombre}"
+                                                       FontSize="15"
+                                                       FontAttributes="Bold"
+                                                       TextColor="{StaticResource TextPrimary}" />
+                                                <Label Text="{Binding Codigo, Converter={StaticResource TextoVacioConverter}, ConverterParameter='Sin Codigo'}"
+                                                       FontSize="12"
+                                                       TextColor="{StaticResource TextSecondary}" />
+                                                <Label Text="{Binding PrecioFinal, StringFormat='${0:N2} c/u'}"
+                                                       FontSize="12"
+                                                       TextColor="{StaticResource TextSecondary}" />
+                                                <Label Text="{Binding DescuentoTexto}"
+                                                       FontSize="12"
+                                                       IsVisible="{Binding TieneDescuento}"
+                                                       TextColor="{StaticResource Danger}" />
+                                            </VerticalStackLayout>
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Subtotal, StringFormat='${0:N2}'}"
+                                                   Style="{StaticResource PriceStyle}"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+
+                                        <Grid Grid.Row="1" ColumnDefinitions="Auto,40,Auto,*,Auto">
+                                            <Button Text="−"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.MenosCantidadCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    WidthRequest="34" HeightRequest="34"
+                                                    CornerRadius="17" Padding="0"
+                                                    FontSize="16" FontAttributes="Bold"
+                                                    TextColor="{StaticResource Primary}"
+                                                    BackgroundColor="{StaticResource CardBackground}"
+                                                    BorderWidth="1"
+                                                    BorderColor="{StaticResource BorderColor}" />
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Cantidad}"
                                                    FontSize="15"
                                                    FontAttributes="Bold"
-                                                   TextColor="{StaticResource TextPrimary}" />
-                                            <Label Text="{Binding Codigo, Converter={StaticResource TextoVacioConverter}, ConverterParameter='Sin Codigo'}"
-                                                   FontSize="12"
-                                                   TextColor="{StaticResource TextSecondary}" />
-                                            <Label Text="{Binding PrecioFinal, StringFormat='${0:N2} c/u'}"
-                                                   FontSize="12"
-                                                   TextColor="{StaticResource TextSecondary}" />
-                                            <Label Text="{Binding DescuentoTexto}"
-                                                   FontSize="12"
-                                                   IsVisible="{Binding TieneDescuento}"
-                                                   TextColor="{StaticResource Danger}" />
-                                        </VerticalStackLayout>
-                                        <Label Grid.Column="1"
-                                               Text="{Binding Subtotal, StringFormat='${0:N2}'}"
-                                               Style="{StaticResource PriceStyle}"
-                                               VerticalOptions="Center" />
+                                                   TextColor="{StaticResource TextPrimary}"
+                                                   HorizontalTextAlignment="Center"
+                                                   VerticalOptions="Center" />
+                                            <Button Grid.Column="2"
+                                                    Text="+"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.MasCantidadCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    WidthRequest="34" HeightRequest="34"
+                                                    CornerRadius="17" Padding="0"
+                                                    FontSize="16" FontAttributes="Bold"
+                                                    TextColor="{StaticResource Primary}"
+                                                    BackgroundColor="{StaticResource CardBackground}"
+                                                    BorderWidth="1"
+                                                    BorderColor="{StaticResource BorderColor}" />
+                                            <Button Grid.Column="4"
+                                                    Text="Eliminar"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EliminarItemCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    FontSize="13"
+                                                    Padding="8,4"
+                                                    TextColor="{StaticResource Danger}"
+                                                    BackgroundColor="Transparent"
+                                                    BorderWidth="0"
+                                                    VerticalOptions="Center" />
+                                        </Grid>
                                     </Grid>
-
-                                    <Grid Grid.Row="1" ColumnDefinitions="Auto,40,Auto,*,Auto">
-                                        <Button Text="−"
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.MenosCantidadCommand}"
-                                                CommandParameter="{Binding .}"
-                                                WidthRequest="34" HeightRequest="34"
-                                                CornerRadius="17" Padding="0"
-                                                FontSize="16" FontAttributes="Bold"
-                                                TextColor="{StaticResource Primary}"
-                                                BackgroundColor="{StaticResource CardBackground}"
-                                                BorderWidth="1"
-                                                BorderColor="{StaticResource BorderColor}" />
-                                        <Label Grid.Column="1"
-                                               Text="{Binding Cantidad}"
-                                               FontSize="15"
-                                               FontAttributes="Bold"
-                                               TextColor="{StaticResource TextPrimary}"
-                                               HorizontalTextAlignment="Center"
-                                               VerticalOptions="Center" />
-                                        <Button Grid.Column="2"
-                                                Text="+"
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.MasCantidadCommand}"
-                                                CommandParameter="{Binding .}"
-                                                WidthRequest="34" HeightRequest="34"
-                                                CornerRadius="17" Padding="0"
-                                                FontSize="16" FontAttributes="Bold"
-                                                TextColor="{StaticResource Primary}"
-                                                BackgroundColor="{StaticResource CardBackground}"
-                                                BorderWidth="1"
-                                                BorderColor="{StaticResource BorderColor}" />
-                                        <Button Grid.Column="4"
-                                                Text="Eliminar"
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EliminarItemCommand}"
-                                                CommandParameter="{Binding .}"
-                                                FontSize="13"
-                                                Padding="8,4"
-                                                TextColor="{StaticResource Danger}"
-                                                BackgroundColor="Transparent"
-                                                BorderWidth="0"
-                                                VerticalOptions="Center" />
-                                    </Grid>
-                                </Grid>
+                                </Frame>
+                            </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>

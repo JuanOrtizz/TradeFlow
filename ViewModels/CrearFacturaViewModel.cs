@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using TradeFlow.Data.Repositories;
+using TradeFlow.Helpers;
 using TradeFlow.Models;
 using TradeFlow.Services;
 using TradeFlow.Views;
@@ -16,6 +17,8 @@ namespace TradeFlow.ViewModels
         private readonly IProductoRepository _productoRepository;
         private readonly IDisplayAlertService _displayAlertService;
         private readonly IValidacionesService _validacionesService;
+
+        public const int MaxItemsFactura = 15;
 
         private ClienteModel? _clienteSeleccionado;
         private ProductoModel? _productoSeleccionado;
@@ -218,6 +221,8 @@ namespace TradeFlow.ViewModels
 
         public decimal Total => ItemsFactura.Sum(i => i.Subtotal);
 
+        public string ContadorItems => $"{ItemsFactura.Count} / {MaxItemsFactura}";
+
         public bool IsBusy
         {
             get => _isBusy;
@@ -335,8 +340,11 @@ namespace TradeFlow.ViewModels
                 return;
             }
 
-            var coincidencias = ListaClientes
-                .Where(c => c.Nombre.IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0)
+            var coincidencias = BusquedaHelper
+                .OrdenarPorRelevancia(
+                    ListaClientes.Where(c => c.Nombre.IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0),
+                    texto,
+                    c => c.Nombre)
                 .Take(8)
                 .ToList();
 
@@ -355,9 +363,13 @@ namespace TradeFlow.ViewModels
                 return;
             }
 
-            var coincidencias = ListaProductos
-                .Where(p => p.Nombre.IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0
-                         || (p.Codigo ?? string.Empty).IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0)
+            var coincidencias = BusquedaHelper
+                .OrdenarPorRelevancia(
+                    ListaProductos.Where(p => p.Nombre.IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0
+                                          || (p.Codigo ?? string.Empty).IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0),
+                    texto,
+                    p => p.Nombre,
+                    p => p.Codigo)
                 .Take(8)
                 .ToList();
 
@@ -431,6 +443,7 @@ namespace TradeFlow.ViewModels
                 ListaProductos = new ObservableCollection<ProductoModel>(productos);
 
                 ItemsFactura.Clear();
+                OnPropertyChanged(nameof(ContadorItems));
             }
             catch (Exception)
             {
@@ -473,6 +486,12 @@ namespace TradeFlow.ViewModels
                 return;
             }
 
+            if (ItemsFactura.Count >= MaxItemsFactura)
+            {
+                await _displayAlertService.MostrarAlertAsync("Limite alcanzado", $"Una boleta admite hasta {MaxItemsFactura} productos", "OK");
+                return;
+            }
+
             CalcularSubtotal();
 
             var item = new DetalleFacturaModel
@@ -489,6 +508,7 @@ namespace TradeFlow.ViewModels
 
             ItemsFactura.Add(item);
             OnPropertyChanged(nameof(Total));
+            OnPropertyChanged(nameof(ContadorItems));
 
             DeseleccionarProducto();
             Cantidad = 1;
@@ -514,6 +534,7 @@ namespace TradeFlow.ViewModels
             if (item == null) return Task.CompletedTask;
             ItemsFactura.Remove(item);
             OnPropertyChanged(nameof(Total));
+            OnPropertyChanged(nameof(ContadorItems));
             return Task.CompletedTask;
         }
 
