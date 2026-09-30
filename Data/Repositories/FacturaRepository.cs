@@ -1,4 +1,5 @@
 using SQLite;
+using TradeFlow.Helpers;
 using TradeFlow.Models;
 
 namespace TradeFlow.Data.Repositories
@@ -53,9 +54,17 @@ namespace TradeFlow.Data.Repositories
         public async Task<IReadOnlyList<FacturaModel>> BuscarPorNumeroAsync(string numero)
         {
             var termino = numero.Trim();
-            return await _db.QueryAsync<FacturaModel>(
+
+            var candidatos = await _db.QueryAsync<FacturaModel>(
                 "SELECT * FROM FacturaModel WHERE CAST(Id AS TEXT) LIKE ?",
                 $"%{termino}%");
+
+            return BusquedaHelper
+                .OrdenarPorRelevancia(
+                    candidatos.Where(f => f.Id.ToString().IndexOf(termino, StringComparison.OrdinalIgnoreCase) >= 0),
+                    termino,
+                    f => f.Id.ToString())
+                .ToList();
         }
 
         public async Task<IReadOnlyList<FacturaModel>> ObtenerPorFechaAsync(DateTime fecha)

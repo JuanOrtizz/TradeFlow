@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows.Input;
 using TradeFlow.Data.Repositories;
+using TradeFlow.Helpers;
 using TradeFlow.Models;
 using TradeFlow.Services;
 using TradeFlow.Views;
@@ -151,7 +152,12 @@ namespace TradeFlow.ViewModels
                     var terminoConFecha = TextoBusqueda?.Trim() ?? string.Empty;
                     if (!string.IsNullOrEmpty(terminoConFecha))
                     {
-                        facturas = facturas.Where(f => f.Id.ToString().Contains(terminoConFecha)).ToList();
+                        facturas = BusquedaHelper
+                            .OrdenarPorRelevancia(
+                                facturas.Where(f => f.Id.ToString().IndexOf(terminoConFecha, StringComparison.OrdinalIgnoreCase) >= 0),
+                                terminoConFecha,
+                                f => f.Id.ToString())
+                            .ToList();
                     }
                 }
                 else

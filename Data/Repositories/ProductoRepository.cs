@@ -1,4 +1,5 @@
 using SQLite;
+using TradeFlow.Helpers;
 using TradeFlow.Models;
 
 namespace TradeFlow.Data.Repositories
@@ -20,11 +21,14 @@ namespace TradeFlow.Data.Repositories
                 "SELECT * FROM ProductoModel WHERE Nombre LIKE ? OR Codigo LIKE ?",
                 $"%{texto}%", $"%{texto}%");
 
-            return candidatos
-                .Where(p => p.Nombre.IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0
-                         || (p.Codigo ?? string.Empty).IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0)
-                .OrderByDescending(p => p.Activo)
-                .ThenBy(p => p.Nombre)
+            return BusquedaHelper
+                .OrdenarPorRelevancia(
+                    candidatos.Where(p => p.Nombre.IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0
+                                       || (p.Codigo ?? string.Empty).IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0),
+                    texto,
+                    p => p.Nombre,
+                    p => p.Codigo)
+                .ThenByDescending(p => p.Activo)
                 .ToList();
         }
 

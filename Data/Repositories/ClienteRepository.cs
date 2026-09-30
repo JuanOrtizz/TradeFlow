@@ -1,4 +1,5 @@
 using SQLite;
+using TradeFlow.Helpers;
 using TradeFlow.Models;
 
 namespace TradeFlow.Data.Repositories
@@ -20,7 +21,12 @@ namespace TradeFlow.Data.Repositories
                 "SELECT * FROM ClienteModel WHERE Nombre LIKE ?",
                 $"%{termino}%");
 
-            return candidatos.Where(c => c.Nombre.IndexOf(termino, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+            return BusquedaHelper
+                .OrdenarPorRelevancia(
+                    candidatos.Where(c => c.Nombre.IndexOf(termino, StringComparison.OrdinalIgnoreCase) >= 0),
+                    termino,
+                    c => c.Nombre)
+                .ToList();
         }
 
         public async Task<int> EliminarAsync(ClienteModel cliente)
@@ -80,7 +86,8 @@ namespace TradeFlow.Data.Repositories
 
         public async Task<IReadOnlyList<ClienteModel>> ObtenerTodosAsync()
         {
-            return await _db.Table<ClienteModel>().ToListAsync();
+            var clientes = await _db.Table<ClienteModel>().ToListAsync();
+            return clientes.OrderBy(c => c.Nombre, StringComparer.OrdinalIgnoreCase).ToList();
         }
 
         public async Task<ClienteModel> RegistrarAsync(string nombre, string telefono, string direccion, LocalidadModel localidad)
