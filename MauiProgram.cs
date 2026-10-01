@@ -62,6 +62,7 @@ namespace TradeFlow
             builder.Services.AddTransient<BackupViewModel>();
             builder.Services.AddTransient<CrearFacturaViewModel>();
             builder.Services.AddTransient<DetalleFacturaViewModel>();
+            builder.Services.AddTransient<EditarFacturaViewModel>();
             builder.Services.AddTransient<VistaPreviaFacturaViewModel>();
             builder.Services.AddTransient<DetalleProductoViewModel>();
             builder.Services.AddTransient<AgregarProductoViewModel>();
@@ -80,6 +81,7 @@ namespace TradeFlow
             builder.Services.AddTransient<BackupView>();
             builder.Services.AddTransient<CrearFacturaView>();
             builder.Services.AddTransient<DetalleFacturaView>();
+            builder.Services.AddTransient<EditarFacturaView>();
             builder.Services.AddTransient<VistaPreviaFacturaView>();
             builder.Services.AddTransient<DetalleProductoView>();
             builder.Services.AddTransient<AgregarProductoView>();

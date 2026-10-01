@@ -31,7 +31,16 @@ namespace TradeFlow.Models
         public int Cantidad
         {
             get => _cantidad;
-            set { if (_cantidad != value) { _cantidad = value; OnPropertyChanged(); OnPropertyChanged(nameof(CantidadPrecioTexto)); } }
+            set
+            {
+                if (_cantidad != value)
+                {
+                    _cantidad = value;
+                    Recalcular();
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(CantidadPrecioTexto));
+                }
+            }
         }
 
         public decimal PrecioUnitario { get; set; }
@@ -60,6 +69,12 @@ namespace TradeFlow.Models
 
         [Ignore]
         public string CantidadPrecioTexto => $"Cant: {Cantidad} x ${PrecioUnitario:N2}";
+
+        private void Recalcular()
+        {
+            PrecioFinal = PrecioUnitario - (PrecioUnitario * DescuentoPorcentaje / 100m);
+            Subtotal = PrecioFinal * Cantidad;
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

@@ -111,6 +111,22 @@ namespace TradeFlow.Data.Repositories
             return factura;
         }
 
+        public async Task ActualizarAsync(FacturaModel factura, List<DetalleFacturaModel> items)
+        {
+            factura.Total = items.Sum(i => i.Subtotal);
+
+            await _db.RunInTransactionAsync(tran =>
+            {
+                tran.Execute("DELETE FROM DetalleFacturaModel WHERE FacturaId = ?", factura.Id);
+                tran.Update(factura);
+                foreach (var item in items)
+                {
+                    item.FacturaId = factura.Id;
+                    tran.Insert(item);
+                }
+            });
+        }
+
         public async Task<IReadOnlyList<FacturaModel>> ObtenerUltimasDiezAsync()
         {
             return await _db.Table<FacturaModel>().OrderByDescending(f => f.Fecha).Take(10).ToListAsync();

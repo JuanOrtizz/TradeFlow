@@ -77,6 +77,7 @@ namespace TradeFlow.ViewModels
         public ICommand VolverCommand { get; }
         public ICommand EliminarCommand { get; }
         public ICommand IrAImprimirCommand { get; }
+        public ICommand EditarCommand { get; }
 
         public DetalleFacturaViewModel(IFacturaRepository facturaRepository, IClienteRepository clienteRepository, IDisplayAlertService displayAlertService)
         {
@@ -90,6 +91,13 @@ namespace TradeFlow.ViewModels
                 if (Factura != null)
                 {
                     await Shell.Current.GoToAsync($"{nameof(VistaPreviaFacturaView)}?facturaId={Factura.Id}");
+                }
+            });
+            EditarCommand = new Command(async () =>
+            {
+                if (Factura != null)
+                {
+                    await Shell.Current.GoToAsync($"{nameof(EditarFacturaView)}?facturaId={Factura.Id}");
                 }
             });
         }

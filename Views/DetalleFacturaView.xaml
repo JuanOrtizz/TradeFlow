@@ -32,6 +32,10 @@
                             Spacing="5"
                             >
                             <Button 
+                                Text="Editar"
+                                Command="{Binding EditarCommand}"
+                                Style="{StaticResource OutlineButtonStyle}" />
+                            <Button 
                                 Text="Imprimir"
                                 Command="{Binding IrAImprimirCommand}"
                                 Style="{StaticResource OutlineButtonStyle}" />

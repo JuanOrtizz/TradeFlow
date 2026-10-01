@@ -6,11 +6,11 @@ using TradeFlow.Data.Repositories;
 using TradeFlow.Helpers;
 using TradeFlow.Models;
 using TradeFlow.Services;
-using TradeFlow.Views;
 
 namespace TradeFlow.ViewModels
 {
-    public class CrearFacturaViewModel : INotifyPropertyChanged
+    [QueryProperty(nameof(FacturaId), "facturaId")]
+    public class EditarFacturaViewModel : INotifyPropertyChanged
     {
         private readonly IFacturaRepository _facturaRepository;
         private readonly IClienteRepository _clienteRepository;
@@ -18,39 +18,53 @@ namespace TradeFlow.ViewModels
         private readonly IDisplayAlertService _displayAlertService;
         private readonly IValidacionesService _validacionesService;
 
-        public const int MaxItemsFactura = 15;
+        public const int MaxItemsFactura = CrearFacturaViewModel.MaxItemsFactura;
 
-        private ClienteModel? _clienteSeleccionado;
+        private int _facturaId;
+        private FacturaModel? _factura;
         private ProductoModel? _productoSeleccionado;
         private int _cantidad = 1;
         private int _descuentoPorcentaje;
         private int _indiceDescuento;
         private decimal _subtotalItem;
         private bool _isBusy;
-        private string _textoBuscarCliente = string.Empty;
         private string _textoBuscarProducto = string.Empty;
-        private bool _haySugerenciasClientes;
         private bool _haySugerenciasProductos;
-
-        private bool _hayErrorEnCliente;
-        private string _errorCliente = string.Empty;
         private bool _hayErrorEnProducto;
         private string _errorProducto = string.Empty;
 
-        private ObservableCollection<ClienteModel> _listaClientes = new ObservableCollection<ClienteModel>();
         private ObservableCollection<ProductoModel> _listaProductos = new ObservableCollection<ProductoModel>();
-        private ObservableCollection<ClienteModel> _sugerenciasClientes = new ObservableCollection<ClienteModel>();
         private ObservableCollection<ProductoModel> _sugerenciasProductos = new ObservableCollection<ProductoModel>();
 
-        public ObservableCollection<ClienteModel> ListaClientes
+        public ObservableCollection<DetalleFacturaModel> ItemsFactura { get; } = new ObservableCollection<DetalleFacturaModel>();
+
+        public IReadOnlyList<string> OpcionesDescuento { get; } =
+            new List<string> { "Sin Descuento" }
+                .Concat(Enumerable.Range(1, 10).Select(i => $"{i}%"))
+                .ToList();
+
+        public int FacturaId
         {
-            get => _listaClientes;
+            get => _facturaId;
             set
             {
-                if (_listaClientes != value)
+                if (_facturaId != value)
                 {
-                    _listaClientes = value;
-                    OnPropertyChanged(nameof(ListaClientes));
+                    _facturaId = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public FacturaModel? Factura
+        {
+            get => _factura;
+            set
+            {
+                if (_factura != value)
+                {
+                    _factura = value;
+                    OnPropertyChanged(nameof(Factura));
                 }
             }
         }
@@ -68,19 +82,6 @@ namespace TradeFlow.ViewModels
             }
         }
 
-        public ObservableCollection<ClienteModel> SugerenciasClientes
-        {
-            get => _sugerenciasClientes;
-            set
-            {
-                if (_sugerenciasClientes != value)
-                {
-                    _sugerenciasClientes = value;
-                    OnPropertyChanged(nameof(SugerenciasClientes));
-                }
-            }
-        }
-
         public ObservableCollection<ProductoModel> SugerenciasProductos
         {
             get => _sugerenciasProductos;
@@ -90,44 +91,6 @@ namespace TradeFlow.ViewModels
                 {
                     _sugerenciasProductos = value;
                     OnPropertyChanged(nameof(SugerenciasProductos));
-                }
-            }
-        }
-
-        public ObservableCollection<DetalleFacturaModel> ItemsFactura { get; } = new ObservableCollection<DetalleFacturaModel>();
-
-        public IReadOnlyList<string> OpcionesDescuento { get; } =
-            new List<string> { "Sin Descuento" }
-                .Concat(Enumerable.Range(1, 10).Select(i => $"{i}%"))
-                .ToList();
-
-        public ClienteModel? ClienteSeleccionado
-        {
-            get => _clienteSeleccionado;
-            set
-            {
-                if (_clienteSeleccionado != value)
-                {
-                    _clienteSeleccionado = value;
-                    OnPropertyChanged(nameof(ClienteSeleccionado));
-                    OnPropertyChanged(nameof(TieneClienteSeleccionado));
-                }
-            }
-        }
-
-        public bool TieneClienteSeleccionado => ClienteSeleccionado != null;
-
-        public string TextoBuscarCliente
-        {
-            get => _textoBuscarCliente;
-            set
-            {
-                var nuevoValor = value ?? string.Empty;
-                if (_textoBuscarCliente != nuevoValor)
-                {
-                    _textoBuscarCliente = nuevoValor;
-                    OnPropertyChanged(nameof(TextoBuscarCliente));
-                    BuscarClientes();
                 }
             }
         }
@@ -236,16 +199,17 @@ namespace TradeFlow.ViewModels
             }
         }
 
-        public bool HayErrorEnCliente
+        public bool HaySugerenciasProductos
         {
-            get => _hayErrorEnCliente;
-            set { if (_hayErrorEnCliente != value) { _hayErrorEnCliente = value; OnPropertyChanged(); } }
-        }
-
-        public string ErrorCliente
-        {
-            get => _errorCliente;
-            set { if (_errorCliente != value) { _errorCliente = value; OnPropertyChanged(); } }
+            get => _haySugerenciasProductos;
+            set
+            {
+                if (_haySugerenciasProductos != value)
+                {
+                    _haySugerenciasProductos = value;
+                    OnPropertyChanged(nameof(HaySugerenciasProductos));
+                }
+            }
         }
 
         public bool HayErrorEnProducto
@@ -260,33 +224,18 @@ namespace TradeFlow.ViewModels
             set { if (_errorProducto != value) { _errorProducto = value; OnPropertyChanged(); } }
         }
 
-        public bool HaySugerenciasClientes
-        {
-            get => _haySugerenciasClientes;
-            set { if (_haySugerenciasClientes != value) { _haySugerenciasClientes = value; OnPropertyChanged(); } }
-        }
-
-        public bool HaySugerenciasProductos
-        {
-            get => _haySugerenciasProductos;
-            set { if (_haySugerenciasProductos != value) { _haySugerenciasProductos = value; OnPropertyChanged(); } }
-        }
-
+        public ICommand GuardarCommand { get; }
+        public ICommand VolverCommand { get; }
         public ICommand AgregarItemCommand { get; }
         public ICommand EliminarItemCommand { get; }
-        public ICommand RegistrarFacturaCommand { get; }
-        public ICommand VolverCommand { get; }
-        public ICommand LimpiarErrorCommand { get; }
-        public ICommand SeleccionarClienteCommand { get; }
-        public ICommand DeseleccionarClienteCommand { get; }
-        public ICommand SeleccionarProductoCommand { get; }
-        public ICommand DeseleccionarProductoCommand { get; }
         public ICommand MasCantidadCommand { get; }
         public ICommand MenosCantidadCommand { get; }
-        public ICommand OcultarSugerenciasClienteCommand { get; }
+        public ICommand SeleccionarProductoCommand { get; }
+        public ICommand DeseleccionarProductoCommand { get; }
         public ICommand OcultarSugerenciasProductoCommand { get; }
+        public ICommand LimpiarErrorCommand { get; }
 
-        public CrearFacturaViewModel(
+        public EditarFacturaViewModel(
             IFacturaRepository facturaRepository,
             IClienteRepository clienteRepository,
             IProductoRepository productoRepository,
@@ -299,57 +248,24 @@ namespace TradeFlow.ViewModels
             _displayAlertService = displayAlertService;
             _validacionesService = validacionesService;
 
+            GuardarCommand = new Command(async () => await GuardarAsync());
+            VolverCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
             AgregarItemCommand = new Command(async () => await AgregarItemAsync());
             EliminarItemCommand = new Command<DetalleFacturaModel>(async (item) => await EliminarItemAsync(item));
-            RegistrarFacturaCommand = new Command(async () => await RegistrarFacturaAsync());
-            VolverCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
-            LimpiarErrorCommand = new Command<string>(LimpiarError);
-            SeleccionarClienteCommand = new Command<ClienteModel>(SeleccionarCliente);
-            DeseleccionarClienteCommand = new Command(DeseleccionarCliente);
-            SeleccionarProductoCommand = new Command<ProductoModel>(SeleccionarProducto);
-            DeseleccionarProductoCommand = new Command(DeseleccionarProducto);
             MasCantidadCommand = new Command<DetalleFacturaModel>(item => CambiarCantidad(item, 1));
             MenosCantidadCommand = new Command<DetalleFacturaModel>(item => CambiarCantidad(item, -1));
-            OcultarSugerenciasClienteCommand = new Command(async () => await OcultarSugerenciasClienteAsync());
+            SeleccionarProductoCommand = new Command<ProductoModel>(SeleccionarProducto);
+            DeseleccionarProductoCommand = new Command(DeseleccionarProducto);
             OcultarSugerenciasProductoCommand = new Command(async () => await OcultarSugerenciasProductoAsync());
+            LimpiarErrorCommand = new Command<string>(LimpiarError);
         }
 
         private void LimpiarError(string campo)
         {
-            switch (campo)
-            {
-                case "Cliente":
-                    HayErrorEnCliente = false;
-                    ErrorCliente = string.Empty;
-                    break;
-                case "Producto":
-                    HayErrorEnProducto = false;
-                    ErrorProducto = string.Empty;
-                    break;
-            }
-        }
+            if (campo != "Producto") return;
 
-        private void BuscarClientes()
-        {
-            var texto = _textoBuscarCliente.Trim();
-
-            if (texto.Length == 0)
-            {
-                SugerenciasClientes = new ObservableCollection<ClienteModel>();
-                HaySugerenciasClientes = false;
-                return;
-            }
-
-            var coincidencias = BusquedaHelper
-                .OrdenarPorRelevancia(
-                    ListaClientes.Where(c => c.Nombre.IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0),
-                    texto,
-                    c => c.Nombre)
-                .Take(8)
-                .ToList();
-
-            SugerenciasClientes = new ObservableCollection<ClienteModel>(coincidencias);
-            HaySugerenciasClientes = coincidencias.Count > 0;
+            HayErrorEnProducto = false;
+            ErrorProducto = string.Empty;
         }
 
         private void BuscarProductos()
@@ -377,38 +293,11 @@ namespace TradeFlow.ViewModels
             HaySugerenciasProductos = coincidencias.Count > 0;
         }
 
-        public async Task OcultarSugerenciasClienteAsync()
-        {
-            await Task.Delay(150);
-            SugerenciasClientes.Clear();
-            HaySugerenciasClientes = false;
-        }
-
         public async Task OcultarSugerenciasProductoAsync()
         {
             await Task.Delay(150);
             SugerenciasProductos.Clear();
             HaySugerenciasProductos = false;
-        }
-
-        private void SeleccionarCliente(ClienteModel? cliente)
-        {
-            if (cliente == null) return;
-
-            ClienteSeleccionado = cliente;
-            TextoBuscarCliente = string.Empty;
-            SugerenciasClientes.Clear();
-            HaySugerenciasClientes = false;
-            HayErrorEnCliente = false;
-            ErrorCliente = string.Empty;
-        }
-
-        private void DeseleccionarCliente()
-        {
-            ClienteSeleccionado = null;
-            TextoBuscarCliente = string.Empty;
-            SugerenciasClientes.Clear();
-            HaySugerenciasClientes = false;
         }
 
         private void SeleccionarProducto(ProductoModel? producto)
@@ -437,17 +326,35 @@ namespace TradeFlow.ViewModels
             {
                 IsBusy = true;
 
-                ListaClientes = new ObservableCollection<ClienteModel>(await _clienteRepository.ObtenerTodosAsync());
+                var factura = await _facturaRepository.ObtenerPorIdAsync(FacturaId);
+                if (factura == null)
+                {
+                    await _displayAlertService.MostrarAlertAsync("Error", "No se pudo cargar la factura", "OK");
+                    return;
+                }
 
-                var productos = (await _productoRepository.ObtenerTodosAsync()).Where(p => p.Activo).ToList();
-                ListaProductos = new ObservableCollection<ProductoModel>(productos);
+                factura.Cliente = await _clienteRepository.ObtenerPorIdAsync(factura.ClienteId);
+                Factura = factura;
+
+                foreach (var item in ItemsFactura.ToList())
+                {
+                    DejarDeVigilar(item);
+                }
 
                 ItemsFactura.Clear();
+                foreach (var detalle in await _facturaRepository.ObtenerDetallesAsync(FacturaId))
+                {
+                    Vigilar(detalle);
+                    ItemsFactura.Add(detalle);
+                }
                 OnPropertyChanged(nameof(ContadorItems));
+                OnPropertyChanged(nameof(Total));
+
+                ListaProductos = new ObservableCollection<ProductoModel>(await _productoRepository.ObtenerActivosAsync());
             }
             catch (Exception)
             {
-                await _displayAlertService.MostrarAlertAsync("Error", "No se pudieron cargar los datos", "OK");
+                await _displayAlertService.MostrarAlertAsync("Error", "No se pudo cargar la factura", "OK");
             }
             finally
             {
@@ -464,15 +371,12 @@ namespace TradeFlow.ViewModels
             SubtotalItem = precio - descuento;
         }
 
-        public async Task AgregarItemAsync()
+        private async Task AgregarItemAsync()
         {
-            ErrorCliente = _validacionesService.ValidarSeleccion(ClienteSeleccionado, "cliente");
-            HayErrorEnCliente = !string.IsNullOrEmpty(ErrorCliente);
-
             ErrorProducto = _validacionesService.ValidarSeleccion(ProductoSeleccionado, "producto");
             HayErrorEnProducto = !string.IsNullOrEmpty(ErrorProducto);
 
-            if (HayErrorEnCliente || HayErrorEnProducto) return;
+            if (HayErrorEnProducto) return;
 
             if (Cantidad <= 0)
             {
@@ -506,6 +410,7 @@ namespace TradeFlow.ViewModels
                 Subtotal = SubtotalItem
             };
 
+            Vigilar(item);
             ItemsFactura.Add(item);
             OnPropertyChanged(nameof(Total));
             OnPropertyChanged(nameof(ContadorItems));
@@ -527,50 +432,75 @@ namespace TradeFlow.ViewModels
             OnPropertyChanged(nameof(Total));
         }
 
-        public Task EliminarItemAsync(DetalleFacturaModel item)
+        private async Task EliminarItemAsync(DetalleFacturaModel item)
         {
-            if (item == null) return Task.CompletedTask;
+            if (item == null) return;
+
+            var confirmar = await _displayAlertService.MostrarAlertConConfirmacionAsync(
+                "Eliminar", $"¿Quitar {item.ProductoNombre} de la factura?", "Eliminar", "Cancelar");
+
+            if (!confirmar) return;
+
+            DejarDeVigilar(item);
             ItemsFactura.Remove(item);
             OnPropertyChanged(nameof(Total));
             OnPropertyChanged(nameof(ContadorItems));
-            return Task.CompletedTask;
         }
 
-        public async Task RegistrarFacturaAsync()
+        private async Task GuardarAsync()
         {
-            if (ClienteSeleccionado == null)
-            {
-                await _displayAlertService.MostrarAlertAsync("Error", "Debe seleccionar un cliente", "OK");
-                return;
-            }
+            if (Factura == null) return;
 
             if (ItemsFactura.Count == 0)
             {
-                await _displayAlertService.MostrarAlertAsync("Error", "Debe agregar al menos un item", "OK");
+                await _displayAlertService.MostrarAlertAsync("Error", "La factura debe tener al menos un producto", "OK");
                 return;
             }
 
             try
             {
                 IsBusy = true;
-                var nuevaFactura = await _facturaRepository.RegistrarAsync(ClienteSeleccionado, ItemsFactura.ToList());
-                await _displayAlertService.MostrarAlertAsync("Exito", "Factura registrada correctamente", "OK");
 
-                await Shell.Current.GoToAsync($"{nameof(DetalleFacturaView)}?facturaId={nuevaFactura.Id}");
-
-                var navigation = Shell.Current.Navigation;
-                if (navigation.NavigationStack.Count > 2)
+                foreach (var item in ItemsFactura)
                 {
-                    navigation.RemovePage(navigation.NavigationStack[navigation.NavigationStack.Count - 2]);
+                    DejarDeVigilar(item);
                 }
+
+                await _facturaRepository.ActualizarAsync(Factura, ItemsFactura.ToList());
+
+                foreach (var item in ItemsFactura)
+                {
+                    Vigilar(item);
+                }
+
+                await _displayAlertService.MostrarAlertAsync("Exito", "Factura actualizada correctamente", "OK");
+                await Shell.Current.GoToAsync("..");
             }
             catch (Exception)
             {
-                await _displayAlertService.MostrarAlertAsync("Error", "No se pudo registrar la factura", "OK");
+                await _displayAlertService.MostrarAlertAsync("Error", "No se pudo actualizar la factura", "OK");
             }
             finally
             {
                 IsBusy = false;
+            }
+        }
+
+        private void Vigilar(DetalleFacturaModel item)
+        {
+            item.PropertyChanged += AlCambiarPropiedadDelItem;
+        }
+
+        private void DejarDeVigilar(DetalleFacturaModel item)
+        {
+            item.PropertyChanged -= AlCambiarPropiedadDelItem;
+        }
+
+        private void AlCambiarPropiedadDelItem(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(DetalleFacturaModel.Subtotal))
+            {
+                OnPropertyChanged(nameof(Total));
             }
         }
 
