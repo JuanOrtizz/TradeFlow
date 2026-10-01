@@ -11,23 +11,28 @@ Construida con **.NET MAUI** sobre la arquitectura **MVVM** + **Repository Patte
 ### Facturación
 - Creación de facturas (remitos) seleccionando cliente y productos activos.
 - Búsqueda de cliente y producto con sugerencias en tiempo real (typeahead).
+- Resultados de búsqueda ordenados por relevancia: primero coincidencia exacta, luego prefijo y por último coincidencia parcial.
 - Cantidad configurable por producto y **descuento por línea de 0 a 10%** (lista desplegable: "Sin Descuento" o de 1% a 10%).
 - Cálculo automático de subtotal por ítem y total de la factura.
+- Máximo de **15 productos distintos** por factura, con contador visible en la pantalla de carga.
 - Detalle de factura con ítems, descuentos e importes.
+- **Edición de facturas ya guardadas**: cambiar cantidades, quitar productos y agregar productos nuevos. Cliente, fecha y número quedan intactos, y los cambios se persisten en una única transacción al pulsar Guardar.
 - Vista previa del remito en HTML (Original + Duplicado con línea de corte) e impresión desde el diálogo del sistema.
 - Búsqueda de facturas por número y filtro por fecha (Hoy / Todas).
 - Eliminación de facturas con borrado en cascada de sus ítems.
 
+> Al agregar un producto a una factura ya guardada se toma el **precio de catálogo del momento**, que puede diferir del precio con el que ese producto fue facturado originalmente.
+
 ### Productos
 - CRUD completo de productos (código, nombre, precio) con estado **activo/inactivo**.
-- Búsqueda en tiempo real por nombre o código (con debounce).
+- Búsqueda en tiempo real por nombre o código (con debounce), ordenada por relevancia.
 - Contador de productos registrados en la pantalla de listado.
 - **Exportar catálogo a PDF** (todos los productos) generado directamente con QuestPDF — tabla Código / Producto / Precio.
 - Al facturar solo se ofrecen **productos activos**.
 
 ### Clientes
 - CRUD completo de clientes (nombre, teléfono, dirección, localidad).
-- Búsqueda en tiempo real por nombre.
+- Búsqueda en tiempo real por nombre, ordenada por relevancia.
 - Asociación con localidades.
 - Bloqueo de eliminación si el cliente tiene facturas asociadas.
 - Vista de facturas de un cliente.
@@ -105,6 +110,7 @@ TradeFlow/
 │       └── IProductoRepository.cs / ProductoRepository.cs
 ├── Helpers/
 │   ├── AppPaths.cs                        # Rutas de datos por PC (Windows / resto)
+│   ├── BusquedaHelper.cs                  # Orden de resultados por relevancia
 │   ├── EjecutarComandoAlDesenfocarBehavior.cs
 │   ├── HandCursor.cs                      # Cursor de mano (Windows)
 │   └── LimpiaErrorAlEnfocarBehavior.cs
@@ -124,8 +130,8 @@ TradeFlow/
 │   ├── IValidacionesService.cs / ValidacionesService.cs
 │   ├── IBackupService.cs / BackupService.cs
 │   └── IImpresionService.cs / ImpresionService.cs
-├── ViewModels/                    # 16 ViewModels (uno por pantalla)
-└── Views/                         # 16 páginas XAML + code-behind
+├── ViewModels/                    # 17 ViewModels (uno por pantalla)
+└── Views/                         # 17 páginas XAML + code-behind
 ```
 
 ---
@@ -169,11 +175,11 @@ TradeFlow/
 | `ProductoId` | `int` | Indexado |
 | `ProductoNombre` | `string` | Máx. 100 |
 | `Codigo` | `string` | Máx. 50 |
-| `Cantidad` | `int` | Observable |
+| `Cantidad` | `int` | Observable; su cambio recalcula `PrecioFinal` y `Subtotal` |
 | `PrecioUnitario` | `decimal` | |
 | `DescuentoPorcentaje` | `int` | 0 a 10 |
-| `PrecioFinal` | `decimal` | Observable |
-| `Subtotal` | `decimal` | Observable |
+| `PrecioFinal` | `decimal` | Observable; derivado de `PrecioUnitario` y `DescuentoPorcentaje` |
+| `Subtotal` | `decimal` | Observable; derivado de `PrecioFinal` y `Cantidad` |
 | `TieneDescuento` | `bool` | Computado, ignorado |
 | `DescuentoTexto` | `string` | Computado, ignorado |
 | `CantidadPrecioTexto` | `string` | Computado, ignorado |
@@ -192,7 +198,7 @@ TradeFlow/
 |---|---|
 | **ProductoRepository** | `ObtenerTodosAsync`, `ObtenerPorIdAsync`, `GuardarAsync`, `EliminarAsync`, `ExisteNombreAsync`, `ExisteCodigoAsync`, `BuscarAsync`, `RegistrarAsync` |
 | **ClienteRepository** | `ObtenerTodosAsync`, `ObtenerPorIdAsync`, `GuardarAsync`, `EliminarAsync`, `ExisteNombreAsync`, `ObtenerPorLocalidadAsync`, `BuscarPorNombreAsync`, `RegistrarAsync` |
-| **FacturaRepository** | `ObtenerTodasAsync`, `ObtenerPorIdAsync`, `ObtenerDetallesAsync`, `GuardarAsync`, `EliminarAsync`, `RegistrarAsync`, `ObtenerPorClienteAsync`, `ContarPorClienteAsync`, `BuscarPorNumeroAsync`, `ObtenerPorFechaAsync`, `ObtenerUltimasDiezAsync` |
+| **FacturaRepository** | `ObtenerTodasAsync`, `ObtenerPorIdAsync`, `ObtenerDetallesAsync`, `GuardarAsync`, `EliminarAsync`, `RegistrarAsync`, `ActualizarAsync`, `ObtenerPorClienteAsync`, `ContarPorClienteAsync`, `BuscarPorNumeroAsync`, `ObtenerPorFechaAsync`, `ObtenerUltimasDiezAsync` |
 | **LocalidadRepository** | `ObtenerTodasAsync`, `ObtenerPorIdAsync`, `RegistrarAsync`, `GuardarAsync`, `EliminarAsync`, `ExisteNombreAsync` |
 
 ---
@@ -232,6 +238,20 @@ TradeFlow/
    O abrir la solución `TradeFlow.sln` en Visual Studio 2022 y ejecutar en el dispositivo deseado.
 
 > Nota: la **impresión** (WebView2) solo está disponible en **Windows**. La **exportación de catálogo a PDF** (QuestPDF) es multiplataforma. Además, el binario de **Windows es portable (unpackaged/self-contained)**, sin dependencia de MSIX: se puede copiar y ejecutar desde una PC o pendrive.
+
+### Publicación portable (Windows)
+
+Para generar la carpeta auto-contenida que se copia al pendrive:
+
+```bash
+dotnet publish TradeFlow.csproj -f net9.0-windows10.0.19041.0 -c Release -r win-x64 --self-contained true -p:UseMonoRuntime=false -o "<destino>"
+```
+
+La bandera `-p:UseMonoRuntime=false` es obligatoria en .NET 9. Sin ella el `publish` falla con `NU1102` al no encontrar `Microsoft.NETCore.App.Runtime.Mono.win-x64`, porque los runtime packs de Mono no se publican para .NET 9 (ver `dotnet/maui#27215`). La propiedad no está definida en el `.csproj`, así que hay que pasar el valor en la línea de comandos.
+
+La carpeta publicada **no incluye los datos**. La base y los respaldos siguen yendo a `%LOCALAPPDATA%\TradeFlow` de la PC donde se ejecuta la aplicación, así que la copia del pendrive arranca vacía en cada equipo. Para trasladar datos hay que copiar `tradeflow.db3` o usar el respaldo desde la pantalla de backup.
+
+Además de la PC destino, se requiere el runtime **Microsoft Edge WebView2** (incluido en Windows 11 y habitualmente en Windows 10). El runtime de .NET no es necesario, porque la publicación es self-contained.
 
 ---
 
